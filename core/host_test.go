@@ -6,7 +6,10 @@ import (
 )
 
 func TestHostMatch(t *testing.T) {
-	hostA := NewHost("hostA", "10.10.10.10", "test host")
+	hostA, err := NewHost("hostA", "10.10.10.10", "test host")
+	if err != nil {
+		t.Fatalf("failed to create test host object")
+	}
 	tests := []struct {
 		name  string
 		input string

@@ -1,10 +1,15 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"regexp"
 	"strconv"
+)
+
+var (
+	errNotImplemented = errors.New("not implemented")
 )
 
 type Network struct {
@@ -54,4 +59,16 @@ func (n *Network) Match(addr string) bool {
 		return true
 	}
 	return false
+}
+
+func (n *Network) containsHost(hostAddr string) (bool, error) {
+	return false, errNotImplemented
+}
+
+func (n *Network) containsRange(rangeAddr string) (bool, error) {
+	return false, errNotImplemented
+}
+
+func (n *Network) containsNetwork(networkAddr string) (bool, error) {
+	return false, errNotImplemented
 }

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"net"
 )
 
@@ -11,13 +12,17 @@ type Host struct {
 	Comment string
 }
 
-func NewHost(name, addr, comment string) *Host {
+func NewHost(name, addr, comment string) (*Host, error) {
+	address := net.ParseIP(addr)
+	if address == nil {
+		return nil, fmt.Errorf("invalid host address: %s", addr)
+	}
 	return &Host{
 		Uid:     0,
 		Name:    name,
-		Address: net.ParseIP(addr),
+		Address: address,
 		Comment: comment,
-	}
+	}, nil
 }
 
 func (h *Host) Match(addr string) bool {

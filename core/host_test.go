@@ -17,6 +17,9 @@ func TestHostMatch(t *testing.T) {
 	}{
 		{name: "True match", input: "10.10.10.10", want: true},
 		{name: "No match", input: "10.10.0.0", want: false},
+		{name: "Invalid format - letters", input: "lorem ipsum", want: false},
+		{name: "Invalid format - range", input: "10.10.0.1-10.10.0.50", want: false},
+		{name: "Invalid format - network", input: "10.10.0.0/24", want: false},
 	}
 
 	for _, tc := range tests {

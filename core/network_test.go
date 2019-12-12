@@ -83,7 +83,7 @@ func TestNetworkcontainsRange(t *testing.T) {
 		{name: "Invalid IP address", input: "lorem ipsum", want: false, err: true},
 		{name: "Range start inside finish outside network", input: "192.168.1.5-192.168.2.3", want: false, err: false},
 		{name: "Range start outside finish inside network", input: "192.168.0.5-192.168.1.33", want: false, err: false},
-		{name: "Range same size as network", input: "192.168.0.0-192.168.1.255", want: true, err: false},
+		{name: "Range same size as network", input: "192.168.1.0-192.168.1.255", want: true, err: false},
 		{name: "Invalid range (start bigger than end)", input: "192.168.1.75-192.168.1.33", want: false, err: true},
 		{name: "Invalid range format - network", input: "192.168.1.0/24", want: false, err: true},
 		{name: "Invalid range format - host", input: "192.168.1.55", want: false, err: true},

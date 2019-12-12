@@ -2,7 +2,6 @@ package core
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -37,7 +36,7 @@ func NewRange(name, start, end, comment string) (*Range, error) {
 	}
 
 	if valid := checkValidRange(rangeStart, rangeStart); !valid {
-		return r, errors.New("range start address must be less than the end address")
+		return r, fmt.Errorf("range start address must be less than the end address: %s-%s", start, end)
 	}
 	r.UID = 0
 	r.Name = name
@@ -48,25 +47,9 @@ func NewRange(name, start, end, comment string) (*Range, error) {
 	return r, nil
 }
 
-// Match will return true if the range string matches the range objects.
-// Will return false if format of addr is incorrect.
-// Correct format == [ip address]-[ip address] i.e 192.168.1.1-192.168.1.10.
-// The first address in the range must be smaller than the second.
-func (r *Range) Match(addr string) bool {
-	components, err := checkRangeFmt(addr)
-	if err != nil {
-		return false
-	}
-	start := components[0]
-	end := components[1]
-
-	startip := net.ParseIP(start)
-	endip := net.ParseIP(end)
-
-	if reflect.DeepEqual(startip, r.StartAddress) && reflect.DeepEqual(endip, r.EndAddress) {
-		return true
-	}
-	return false
+// Match will return true if the passed in range object's address matches.
+func (r *Range) Match(addr *Range) bool {
+	return reflect.DeepEqual(addr.StartAddress, r.StartAddress) && reflect.DeepEqual(addr.EndAddress, r.EndAddress)
 }
 
 // Checks if the format of the range string is valid.
@@ -96,14 +79,23 @@ func checkValidRange(start, end net.IP) bool {
 	return true
 }
 
-func (r *Range) containsHost(hostAddr string) (bool, error) {
+func convertIP(addr net.IP) int {
+	final := 0
+	for _, b := range addr {
+		final <<= 8
+		final &= int(b)
+	}
+	return final
+}
+
+func (r *Range) containsHost(host *Host) (bool, error) {
 	return false, errNotImplemented
 }
 
-func (r *Range) containsRange(rangeAddr string) (bool, error) {
+func (r *Range) containsRange(rng *Range) (bool, error) {
 	return false, errNotImplemented
 }
 
-func (r *Range) containsNetwork(networkAddr string) (bool, error) {
+func (r *Range) containsNetwork(network *Network) (bool, error) {
 	return false, errNotImplemented
 }

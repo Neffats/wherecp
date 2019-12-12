@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"regexp"
+	"reflect"
 	"strconv"
 )
 
@@ -52,58 +52,19 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 	return network, nil
 }
 
-// Match will return true if passed a network address that matches the object's address.
-// The format of the address is [network address]/[subnet prefix] i.e. 192.168.1.0/24
-// This will return false if incorrect format is used - maybe better to return error?
-func (n *Network) Match(addr string) bool {
-	// TODO: make this check more specific. Needs to match against [ipaddress]/[netmask]
-	valid, err := regexp.MatchString(".*/.*", addr)
-	if err != nil {
-		return false
-	}
-	if !valid {
-		return false
-	}
-
-	if n.Address.String() == addr {
-		return true
-	}
-	return false
+// Match will return true if passed a network that has a matching address.
+func (n *Network) Match(addr *Network) bool {
+	return reflect.DeepEqual(n.Address, addr.Address)
 }
 
-func (n *Network) containsHost(hostAddr string) (bool, error) {
-	host := net.ParseIP(hostAddr)
-	if host == nil {
-		return false, fmt.Errorf("invalid host address: %s", hostAddr)
-	}
-
-	return n.Address.Contains(host), nil
+func (n *Network) containsHost(h *Host) (bool, error) {
+	return n.Address.Contains(h.Address), nil
 }
 
-func (n *Network) containsRange(rangeAddr string) (bool, error) {
-	components, err := checkRangeFmt(rangeAddr)
-	if err != nil {
-		return false, fmt.Errorf("invalid range address: %v", err)
-	}
-	start := components[0]
-	end := components[1]
-
-	startIP := net.ParseIP(start)
-	if startIP == nil {
-		return false, fmt.Errorf("invalid host address: %s", start)
-	}
-	endIP := net.ParseIP(end)
-	if endIP == nil {
-		return false, fmt.Errorf("invalid host address: %s", end)
-	}
-
-	if valid := checkValidRange(startIP, endIP); !valid {
-		return false, fmt.Errorf("start of range must be less than the end address: %s", rangeAddr)
-	}
-
-	return (n.Address.Contains(startIP) && n.Address.Contains(endIP)), nil
+func (n *Network) containsRange(r *Range) (bool, error) {
+	return (n.Address.Contains(r.StartAddress) && n.Address.Contains(r.EndAddress)), nil
 }
 
-func (n *Network) containsNetwork(networkAddr string) (bool, error) {
+func (n *Network) containsNetwork(network *Network) (bool, error) {
 	return false, errNotImplemented
 }

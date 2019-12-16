@@ -1,10 +1,46 @@
 package core
 
 import (
+	"net"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestNewRange(t *testing.T) {
+	testRange := &Range{
+		UID:          0,
+		Name:         "testRange",
+		StartAddress: net.ParseIP("192.168.1.1"),
+		EndAddress:   net.ParseIP("192.168.1.254"),
+		Comment:      "test range object",
+	}
+	tests := []struct {
+		name  string
+		input string
+		want  bool
+		err   bool
+	}{
+		{name: "Matching range", input: "192.168.1.1-192.168.1.254", want: true, err: false},
+		{name: "Invalid range", input: "192.168.1.254-192.168.1.1", want: false, err: true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			parts := strings.Split(tc.input, "-")
+			got, err := NewRange("testRange", parts[0], parts[1], "test range object")
+			if err != nil {
+				if tc.err {
+					return
+				}
+				t.Fatalf("failed to create test range object: %v", err)
+			}
+			if !reflect.DeepEqual(testRange, got) {
+				t.Fatalf("created range didn't match.")
+			}
+		})
+
+	}
+}
 
 func TestRangeMatch(t *testing.T) {
 	rangeA, err := NewRange("rangeA", "192.168.1.1", "192.168.254.1", "test range object")
@@ -51,10 +87,7 @@ func TestRangecontainsHost(t *testing.T) {
 	}{
 		{name: "Host contained in range", input: "192.168.1.3", want: true, err: false},
 		{name: "Host outside range", input: "192.168.2.1", want: false, err: false},
-		{name: "Invalid IP address", input: "lorem ipsum", want: false, err: true},
 		{name: "Host address same as range", input: "192.168.1.1", want: true, err: false},
-		{name: "Invalid host format - range", input: "192.168.1.1-192.168.1.5", want: false, err: true},
-		{name: "Invalid host format - network", input: "192.168.1.0/24", want: false, err: true},
 	}
 
 	for _, tc := range tests {
@@ -90,13 +123,9 @@ func TestRangecontainsRange(t *testing.T) {
 	}{
 		{name: "Range contained in range", input: "192.168.1.3-192.168.1.6", want: true, err: false},
 		{name: "Range outside range", input: "192.168.2.1-192.168.2.5", want: false, err: false},
-		{name: "Invalid IP address", input: "lorem ipsum", want: false, err: true},
 		{name: "Range start inside finish outside range", input: "192.168.1.5-192.168.2.3", want: false, err: false},
 		{name: "Range start outside finish inside range", input: "192.168.0.5-192.168.1.33", want: false, err: false},
 		{name: "Range same size as range", input: "192.168.1.1-192.168.1.254", want: true, err: false},
-		{name: "Invalid range (start bigger than end)", input: "192.168.1.75-192.168.1.33", want: false, err: true},
-		{name: "Invalid range format - network", input: "192.168.1.0/24", want: false, err: true},
-		{name: "Invalid range format - host", input: "192.168.1.55", want: false, err: true},
 	}
 
 	for _, tc := range tests {

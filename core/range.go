@@ -1,7 +1,7 @@
 package core
 
 import (
-	"bytes"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"reflect"
@@ -35,7 +35,7 @@ func NewRange(name, start, end, comment string) (*Range, error) {
 		return nil, fmt.Errorf("invalid start address: %s", start)
 	}
 
-	if valid := checkValidRange(rangeStart, rangeStart); !valid {
+	if valid := checkValidRange(rangeStart, rangeEnd); !valid {
 		return r, fmt.Errorf("range start address must be less than the end address: %s-%s", start, end)
 	}
 	r.UID = 0
@@ -72,28 +72,46 @@ func checkRangeFmt(addr string) ([]string, error) {
 
 func checkValidRange(start, end net.IP) bool {
 	// The start of a range needs to be smaller than the end of it.
-	comp := bytes.Compare(start, end)
-	if comp != -1 {
+	s := ip2int(start)
+	e := ip2int(end)
+	if s > e {
 		return false
 	}
 	return true
 }
 
-func convertIP(addr net.IP) int {
-	final := 0
-	for _, b := range addr {
-		final <<= 8
-		final &= int(b)
+// Stole from https://gist.github.com/ammario/649d4c0da650162efd404af23e25b86b
+func ip2int(ip net.IP) uint32 {
+	if len(ip) == 16 {
+		return binary.BigEndian.Uint32(ip[12:16])
 	}
-	return final
+	return binary.BigEndian.Uint32(ip)
 }
 
 func (r *Range) containsHost(host *Host) (bool, error) {
-	return false, errNotImplemented
+	h := ip2int(host.Address)
+	s := ip2int(r.StartAddress)
+	e := ip2int(r.EndAddress)
+
+	if h >= s && h <= e {
+		return true, nil
+	}
+	return false, nil
 }
 
-func (r *Range) containsRange(rng *Range) (bool, error) {
-	return false, errNotImplemented
+// Only returns true if both the foreign range is the same or inside the self range.
+func (r *Range) containsRange(foreignRange *Range) (bool, error) {
+	s := ip2int(r.StartAddress)
+	e := ip2int(r.EndAddress)
+
+	fStart := ip2int(foreignRange.StartAddress)
+	fEnd := ip2int(foreignRange.EndAddress)
+
+	if fStart >= s && fStart <= e && fEnd >= s && fEnd <= e {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (r *Range) containsNetwork(network *Network) (bool, error) {

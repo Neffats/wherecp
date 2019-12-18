@@ -66,5 +66,6 @@ func (n *Network) containsRange(r *Range) (bool, error) {
 }
 
 func (n *Network) containsNetwork(network *Network) (bool, error) {
+
 	return false, errNotImplemented
 }

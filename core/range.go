@@ -88,6 +88,13 @@ func ip2int(ip net.IP) uint32 {
 	return binary.BigEndian.Uint32(ip)
 }
 
+func mask2int(mask net.IPMask) uint32 {
+	if len(mask) == 16 {
+		return binary.BigEndian.Uint32(mask[12:16])
+	}
+	return binary.BigEndian.Uint32(mask)
+}
+
 func (r *Range) containsHost(host *Host) (bool, error) {
 	h := ip2int(host.Address)
 	s := ip2int(r.StartAddress)

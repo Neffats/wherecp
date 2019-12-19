@@ -18,7 +18,6 @@ type Network struct {
 	UID     int
 	Name    string
 	Address net.IPNet
-	Netmask net.IPMask
 	Comment string
 }
 
@@ -65,7 +64,20 @@ func (n *Network) containsRange(r *Range) (bool, error) {
 	return (n.Address.Contains(r.StartAddress) && n.Address.Contains(r.EndAddress)), nil
 }
 
-func (n *Network) containsNetwork(network *Network) (bool, error) {
+func (n *Network) containsNetwork(foreignN *Network) (bool, error) {
+	if ip2int(n.Address.IP) <= ip2int(foreignN.Address.IP) {
+		if ip2int(n.broadcast()) >= ip2int(foreignN.broadcast()) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
 
-	return false, errNotImplemented
+func (n *Network) broadcast() net.IP {
+	broadcast := net.IP(make([]byte, 4))
+	for i := range n.Address.IP[12:16] {
+		broadcast[i] = n.Address.IP[12+i] | ^n.Address.Mask[i]
+	}
+
+	return broadcast
 }

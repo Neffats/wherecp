@@ -122,5 +122,10 @@ func (r *Range) containsRange(foreignRange *Range) (bool, error) {
 }
 
 func (r *Range) containsNetwork(network *Network) (bool, error) {
-	return false, errNotImplemented
+	if ip2int(network.Address.IP) >= ip2int(r.StartAddress) {
+		if ip2int(network.broadcast()) <= ip2int(r.EndAddress) {
+			return true, nil
+		}
+	}
+	return false, nil
 }

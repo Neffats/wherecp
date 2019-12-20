@@ -6,6 +6,18 @@ import (
 	"testing"
 )
 
+func TestNewNetwork(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  bool
+	}{
+		{name: "Valid", input: "192.168.1.0/24", want: true},
+		{name: "Different mask", input: "192.168.1.0/23", want: false},
+		{name: "Different address", input: "192.168.2.0/24", want: false},
+	}
+}
+
 func TestNetworkMatch(t *testing.T) {
 	netA, err := NewNetwork("netA", "192.168.1.0", "24", "test network")
 	if err != nil {

@@ -185,16 +185,18 @@ func TestNetworkContains(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create test network object: %v", err)
 	}
-	tests := []struct {
-		name  string
-		input string
-		want  bool
-		err   bool
-	}{
-		{name: "Network - inside test network", input: "192.168.1.0/24", want: true, err: false},
-		{name: "Contains network", input: "192.168.1.0/26", want: true, err: false},
-		{name: "Outside of network", input: "192.168.5.0/24", want: false, err: false},
-		{name: "Network that contains test network", input: "192.168.0.0/20", want: false, err: false},
-	}
 
+	t.Run("Network - Inside testnet", func(t *testing.T) {
+		testNet, err := NewNetwork("testNet", "192.168.1.128", "25", "test network")
+		if err != nil {
+			t.Fatalf("failed to create test network: %v", err)
+		}
+		got, err := netA.Contains(testNet)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+		if got != true {
+			t.Fatalf("expected: %v, got: %v", true, got)
+		}
+	})
 }

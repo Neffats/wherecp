@@ -63,6 +63,25 @@ func (n *Network) Match(addr *Network) bool {
 	return reflect.DeepEqual(n.Address, addr.Address)
 }
 
+func (n *Network) Contains(obj interface{}) (bool, error) {
+	var (
+		result bool
+		err    error
+	)
+	switch v := obj.(type) {
+	case *Host:
+		result, err = n.containsHost(v)
+	case *Network:
+		result, err = n.containsNetwork(v)
+	case *Range:
+		result, err = n.containsRange(v)
+	default:
+		return false, errors.New("provided data type is unsupported")
+	}
+
+	return result, err
+}
+
 func (n *Network) containsHost(h *Host) (bool, error) {
 	return n.Address.Contains(h.Address), nil
 }

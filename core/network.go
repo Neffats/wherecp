@@ -40,11 +40,18 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 	if netAddr == nil {
 		return network, fmt.Errorf("invalid network address: %s", addr)
 	}
+	netMask := net.CIDRMask(n, 32)
+
+	// Check if addr is actually the network address for the subnet.
+	// Address shouldn't change if (bitwise) anded with netmask.
+	if (ip2int(netAddr) & mask2int(netMask)) != ip2int(netAddr) {
+		return network, fmt.Errorf("address not the network address for supplied subnet: %s/%s", addr, mask)
+	}
 	network.UID = 0
 	network.Name = name
 	network.Address = net.IPNet{
 		IP:   netAddr,
-		Mask: net.CIDRMask(n, 32),
+		Mask: netMask,
 	}
 	network.Comment = comment
 

@@ -10,11 +10,30 @@ func TestNewNetwork(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		want  bool
+		err   bool
 	}{
-		{name: "Valid", input: "192.168.1.0/24", want: true},
-		{name: "Different mask", input: "192.168.1.0/23", want: false},
-		{name: "Different address", input: "192.168.2.0/24", want: false},
+		{name: "Valid", input: "192.168.1.0/24", err: false},
+		{name: "Different mask", input: "192.168.0.0/23", err: false},
+		{name: "Different address", input: "192.168.2.0/24", err: false},
+		{name: "Invalid mask", input: "192.168.2.0/33", err: true},
+		{name: "Invalid address - letters", input: "lorem/ipsum", err: true},
+		{name: "Invalid address - bad ip", input: "355.22.1.0/24", err: true},
+		{name: "Invalid address - not network address", input: "192.168.1.2/24", err: true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			parts := strings.Split(tc.input, "/")
+			_, err := NewNetwork("test", parts[0], parts[1], "test network")
+			if err != nil {
+				if tc.err == true {
+					return
+				}
+				t.Fatalf("got error when not expected: %v", err)
+			}
+			if tc.err == true {
+				t.Fatalf("expected error")
+			}
+		})
 	}
 }
 
@@ -29,7 +48,7 @@ func TestNetworkMatch(t *testing.T) {
 		want  bool
 	}{
 		{name: "Positive Match", input: "192.168.1.0/24", want: true},
-		{name: "Different mask", input: "192.168.1.0/23", want: false},
+		{name: "Different mask", input: "192.168.0.0/23", want: false},
 		{name: "Different address", input: "192.168.2.0/24", want: false},
 	}
 
@@ -159,4 +178,23 @@ func TestNetworkcontainsNetwork(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNetworkContains(t *testing.T) {
+	netA, err := NewNetwork("netA", "192.168.1.0", "24", "test network")
+	if err != nil {
+		t.Fatalf("failed to create test network object: %v", err)
+	}
+	tests := []struct {
+		name  string
+		input string
+		want  bool
+		err   bool
+	}{
+		{name: "Network - inside test network", input: "192.168.1.0/24", want: true, err: false},
+		{name: "Contains network", input: "192.168.1.0/26", want: true, err: false},
+		{name: "Outside of network", input: "192.168.5.0/24", want: false, err: false},
+		{name: "Network that contains test network", input: "192.168.0.0/20", want: false, err: false},
+	}
+
 }

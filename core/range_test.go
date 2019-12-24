@@ -186,3 +186,113 @@ func TestRangecontainsNetwork(t *testing.T) {
 		})
 	}
 }
+
+func TestRangeContains(t *testing.T) {
+	rangeA, err := NewRange("rangeA", "192.168.1.0", "192.168.1.255", "test range")
+	if err != nil {
+		t.Fatalf("failed to create test network object: %v", err)
+	}
+
+	t.Run("Network - Inside testnet", func(t *testing.T) {
+		want := true
+		testNet, err := NewNetwork("testNet", "192.168.1.128", "25", "test network")
+		if err != nil {
+			t.Fatalf("failed to create test network: %v", err)
+		}
+		got, err := rangeA.Contains(testNet)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+		if got != want {
+			t.Fatalf("expected: %v, got: %v", want, got)
+		}
+	})
+
+	t.Run("Network - Outside testnet", func(t *testing.T) {
+		want := false
+		testNet, err := NewNetwork("testNet", "192.168.2.128", "25", "test network")
+		if err != nil {
+			t.Fatalf("failed to create test network: %v", err)
+		}
+		got, err := rangeA.Contains(testNet)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+		if got != want {
+			t.Fatalf("expected: %v, got: %v", want, got)
+		}
+	})
+
+	t.Run("Range - Inside testnet", func(t *testing.T) {
+		want := true
+		testRange, err := NewRange("testRange", "192.168.1.128", "192.168.1.150", "test range")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		got, err := rangeA.Contains(testRange)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+		if got != want {
+			t.Fatalf("expected: %v, got: %v", want, got)
+		}
+	})
+
+	t.Run("Range - Outside testnet", func(t *testing.T) {
+		want := false
+		testRange, err := NewRange("testRange", "192.168.2.128", "192.168.2.150", "test range")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		got, err := rangeA.Contains(testRange)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+		if got != want {
+			t.Fatalf("expected: %v, got: %v", want, got)
+		}
+	})
+
+	t.Run("Host - Inside testnet", func(t *testing.T) {
+		want := true
+		testHost, err := NewHost("testHost", "192.168.1.128", "test host")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		got, err := rangeA.Contains(testHost)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+		if got != want {
+			t.Fatalf("expected: %v, got: %v", want, got)
+		}
+	})
+
+	t.Run("Host - Outside testnet", func(t *testing.T) {
+		want := false
+		testHost, err := NewHost("testHost", "192.168.2.128", "test host")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		got, err := rangeA.Contains(testHost)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+		if got != want {
+			t.Fatalf("expected: %v, got: %v", want, got)
+		}
+	})
+
+	t.Run("Unsupported type", func(t *testing.T) {
+		want := false
+		invalid := "lorem ipsum"
+		got, err := rangeA.Contains(invalid)
+		if err == nil {
+			t.Fatalf("didn't receive error when expected")
+		}
+		if got != want {
+			t.Fatalf("expected: %v, got: %v", want, got)
+		}
+
+	})
+}

@@ -63,6 +63,9 @@ func (n *Network) Match(addr *Network) bool {
 	return reflect.DeepEqual(n.Address, addr.Address)
 }
 
+// Contains will return true if the network contains the provided object.
+// Only returns true if all of the object is inside the network.
+// i.e. if a range starts inside and finishes outside it will return false.
 func (n *Network) Contains(obj interface{}) (bool, error) {
 	var (
 		result bool

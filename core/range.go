@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -50,6 +51,26 @@ func NewRange(name, start, end, comment string) (*Range, error) {
 // Match will return true if the passed in range object's address matches.
 func (r *Range) Match(addr *Range) bool {
 	return reflect.DeepEqual(addr.StartAddress, r.StartAddress) && reflect.DeepEqual(addr.EndAddress, r.EndAddress)
+}
+
+// Contains will return true if obj is contained by the range.
+func (r *Range) Contains(obj interface{}) (bool, error) {
+	var (
+		result bool
+		err    error
+	)
+	switch v := obj.(type) {
+	case *Host:
+		result, err = r.containsHost(v)
+	case *Network:
+		result, err = r.containsNetwork(v)
+	case *Range:
+		result, err = r.containsRange(v)
+	default:
+		return false, errors.New("provided data type is unsupported")
+	}
+
+	return result, err
 }
 
 // Checks if the format of the range string is valid.

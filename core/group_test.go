@@ -13,7 +13,7 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test host: %v", err)
 		}
-		err := testGroup.Add(testHost)
+		err = testGroup.Add(testHost)
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -28,13 +28,13 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test network: %v", err)
 		}
-		err := testGroup.Add(testNetwork)
+		err = testGroup.Add(testNetwork)
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
 		if !reflect.DeepEqual(testNetwork, testGroup.Networks[0]) {
-			t.Fatalf("host objects don't match")
+			t.Fatalf("network objects don't match")
 		}
 	})
 
@@ -43,13 +43,13 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test range: %v", err)
 		}
-		err := testGroup.Add(testRange)
+		err = testGroup.Add(testRange)
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testRange, testGroup.Networks[0]) {
-			t.Fatalf("host objects don't match")
+		if !reflect.DeepEqual(testRange, testGroup.Ranges[0]) {
+			t.Fatalf("range objects don't match")
 		}
 	})
 

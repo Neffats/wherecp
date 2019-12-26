@@ -61,3 +61,64 @@ func TestAdd(t *testing.T) {
 		}
 	})
 }
+
+func TestGroupContains(t *testing.T) {
+	// Set up the objects we'll need, better to move to own function?
+	host1, err := NewHost("host1", "192.168.1.1", "host 1")
+	if err != nil {
+		t.Fatalf("failed to create host1: %v", err)
+	}
+	host2, err := NewHost("host2", "192.168.2.1", "host 2")
+	if err != nil {
+		t.Fatalf("failed to create host2: %v", err)
+	}
+	net1, err := NewNetwork("net1", "192.168.1.0", "24", "net 1")
+	if err != nil {
+		t.Fatalf("failed to create net1: %v", err)
+	}
+	net2, err := NewNetwork("net2", "192.168.1.128", "25", "net 1")
+	if err != nil {
+		t.Fatalf("failed to create net2: %v", err)
+	}
+	range1, err := NewRange("range1", "192.168.1.1", "192.168.1.250", "range 1")
+	if err != nil {
+		t.Fatalf("failed to create range1: %v", err)
+	}
+	range2, err := NewRange("range2", "192.168.2.1", "192.168.2.250", "range 2")
+	if err != nil {
+		t.Fatalf("failed to create range2: %v", err)
+	}
+	testGroup, err := NewGroup("testGroup", "group for testing")
+	if err != nil {
+		t.Fatalf("failed to create test group: %v", err)
+	}
+
+	err = testGroup.Add(host1)
+	if err != nil {
+		t.Fatalf("failed to add host1 to group: %v", err)
+	}
+	err = testGroup.Add(range1)
+	if err != nil {
+		t.Fatalf("failed to add range1 to group: %v", err)
+	}
+	err = testGroup.Add(net1)
+	if err != nil {
+		t.Fatalf("failed to add net1 to group: %v", err)
+	}
+
+	tests := []struct {
+		name   string
+		input  interface{}
+		strict bool
+		want   bool
+		err    bool
+	}{
+		{name: "Strict - Host match", input: host1, strict: true, want: true, err: false},
+		{name: "Strict - Network match", input: net1, strict: true, want: true, err: false},
+		{name: "Strict - Range match", input: range1, strict: true, want: true, err: false},
+		{name: "Strict - Host no match", input: host2, strict: true, want: false, err: false},
+		{name: "Strict - Network no match", input: net2, strict: true, want: false, err: false},
+		{name: "Strict - Range no match", input: range2, strict: true, want: false, err: false},
+		{name: "Strict - Unsupported type", input: "lorem ipsum", strict: true, want: false, err: true},
+	}
+}

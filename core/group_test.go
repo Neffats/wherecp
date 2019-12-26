@@ -121,4 +121,19 @@ func TestGroupContains(t *testing.T) {
 		{name: "Strict - Range no match", input: range2, strict: true, want: false, err: false},
 		{name: "Strict - Unsupported type", input: "lorem ipsum", strict: true, want: false, err: true},
 	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := groupTest.Contains(tc.input, strict)
+			if err != nil {
+				if tc.err {
+					return
+				}
+				t.Fatalf("got error when not expected: %v", err)
+			}
+			if !reflect.DeepEqual(tc.want, got) {
+				t.Fatalf("expected: %v, got: %v", tc.want, got)
+			}
+		})
+	}
 }

@@ -58,9 +58,9 @@ func (g *Group) Contains(obj interface{}, strict bool) (bool, error) {
 	)
 
 	if strict {
-		result, err = containsStrict(obj)
+		result, err = g.containsStrict(obj)
 	} else {
-		result, err = containsNotStrict(obj)
+		result, err = g.containsNotStrict(obj)
 	}
 
 	return result, err

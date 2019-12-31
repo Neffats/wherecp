@@ -80,18 +80,24 @@ func TestGroupContains(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create net2: %v", err)
 	}
+	net3, err := NewNetwork("net2", "192.168.2.128", "25", "net 1")
+	if err != nil {
+		t.Fatalf("failed to create net3: %v", err)
+	}
 	range1, err := NewRange("range1", "192.168.1.1", "192.168.1.250", "range 1")
 	if err != nil {
 		t.Fatalf("failed to create range1: %v", err)
 	}
-	range2, err := NewRange("range2", "192.168.2.1", "192.168.2.250", "range 2")
+	range2, err := NewRange("range2", "192.168.1.50", "192.168.1.150", "range 2")
 	if err != nil {
 		t.Fatalf("failed to create range2: %v", err)
 	}
-	testGroup, err := NewGroup("testGroup", "group for testing")
+	range3, err := NewRange("range2", "192.168.2.1", "192.168.2.250", "range 2")
 	if err != nil {
-		t.Fatalf("failed to create test group: %v", err)
+		t.Fatalf("failed to create range3: %v", err)
 	}
+	testGroup := NewGroup("testGroup", "group for testing")
+	testGroup2 := NewGroup("testGroup2", "group 2")
 
 	err = testGroup.Add(host1)
 	if err != nil {
@@ -105,6 +111,10 @@ func TestGroupContains(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to add net1 to group: %v", err)
 	}
+	err = testGroup2.Add(net2)
+	if err != nil {
+		t.Fatalf("failed to add net2 to group2: %v", err)
+	}
 
 	tests := []struct {
 		name   string
@@ -116,15 +126,23 @@ func TestGroupContains(t *testing.T) {
 		{name: "Strict - Host match", input: host1, strict: true, want: true, err: false},
 		{name: "Strict - Network match", input: net1, strict: true, want: true, err: false},
 		{name: "Strict - Range match", input: range1, strict: true, want: true, err: false},
+		//{name: "Strict - Group match", input: testGroup, strict: true, want: true, err: false},
 		{name: "Strict - Host no match", input: host2, strict: true, want: false, err: false},
 		{name: "Strict - Network no match", input: net2, strict: true, want: false, err: false},
 		{name: "Strict - Range no match", input: range2, strict: true, want: false, err: false},
 		{name: "Strict - Unsupported type", input: "lorem ipsum", strict: true, want: false, err: true},
+		{name: "Not Strict - Host match", input: host1, strict: false, want: true, err: false},
+		{name: "Not Strict - Network match", input: net2, strict: false, want: true, err: false},
+		{name: "Not Strict - Range match", input: range2, strict: false, want: true, err: false},
+		{name: "Not Strict - Host no match", input: host2, strict: false, want: false, err: false},
+		{name: "Not Strict - Network no match", input: net3, strict: false, want: false, err: false},
+		{name: "Not Strict - Range no match", input: range3, strict: false, want: false, err: false},
+		{name: "Strict - Unsupported type", input: "lorem ipsum", strict: false, want: false, err: true},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := groupTest.Contains(tc.input, strict)
+			got, err := testGroup.Contains(tc.input, tc.strict)
 			if err != nil {
 				if tc.err {
 					return

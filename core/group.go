@@ -97,13 +97,32 @@ func (g *Group) containsStrict(obj interface{}) (bool, error) {
 	default:
 		return false, errors.New("unsupported data type")
 	}
+	return false, nil
 }
 
 func (g *Group) containsNotStrict(obj interface{}) (bool, error) {
 	switch v := obj.(type) {
 	case *Host:
 		for _, hst := range g.Hosts {
-			if hst.match(v) {
+			if hst.Match(v) {
+				return true, nil
+			}
+		}
+		for _, net := range g.Networks {
+			match, err := net.Contains(obj)
+			if err != nil {
+				return false, err
+			}
+			if match {
+				return match, nil
+			}
+		}
+		for _, rng := range g.Ranges {
+			match, err := rng.Contains(obj)
+			if err != nil {
+				return false, err
+			}
+			if match {
 				return true, nil
 			}
 		}

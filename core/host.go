@@ -31,7 +31,6 @@ func NewHost(name, addr, comment string) (*Host, error) {
 
 // Match will return true if addr matches the host's address.
 // Returns false if invalid IPv4 address - might be better to return an error?
-func (h *Host) Match(addr string) bool {
-	comp := net.ParseIP(addr)
-	return h.Address.Equal(comp)
+func (h *Host) Match(addr *Host) bool {
+	return h.Address.Equal(addr.Address)
 }

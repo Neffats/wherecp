@@ -6,10 +6,16 @@ import (
 	"net"
 	"reflect"
 	"strconv"
+
+	"github.com/Neffats/ip"
 )
 
 var (
 	errNotImplemented = errors.New("not implemented")
+)
+
+const (
+	addrMax = ip.Address(4294967295)
 )
 
 // Network represents an IPv4 subnet.
@@ -17,7 +23,8 @@ var (
 type Network struct {
 	UID     int
 	Name    string
-	Address net.IPNet
+	Address *ip.Address
+	Mask    *ip.Address
 	Comment string
 }
 
@@ -27,35 +34,38 @@ type Network struct {
 // Will return an error if the netmask is not valid i.e. > 32 or < 0 or invalid network address.
 func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 	network := new(Network)
-	n, err := strconv.Atoi(mask)
-	if err != nil {
-		return network, fmt.Errorf("failed to convert mask to int: %v", err)
-	}
-	// Make sure that we got a valid network prefix.
-	if n < 0 || n > 32 {
-		return network, fmt.Errorf("invalid mask provided: %v", n)
-	}
 
-	netAddr := net.ParseIP(addr)
-	if netAddr == nil {
-		return network, fmt.Errorf("invalid network address: %s", addr)
+	netAddr, err := ip.NewAddress(addr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create network address: %v", err)
 	}
-	netMask := net.CIDRMask(n, 32)
+	netMask, err := ip.NewAddress(mask)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create mask address: %v", err)
+	}
 
 	// Check if addr is actually the network address for the subnet.
 	// Address shouldn't change if (bitwise) anded with netmask.
-	if (ip2int(netAddr) & mask2int(netMask)) != ip2int(netAddr) {
-		return network, fmt.Errorf("address not the network address for supplied subnet: %s/%s", addr, mask)
+	if ip.Mask(netAddr, netMask) != netAddr {
+		return nil, fmt.Errorf("address not the network address for supplied subnet: %s/%s", addr, mask)
 	}
 	network.UID = 0
 	network.Name = name
-	network.Address = net.IPNet{
-		IP:   netAddr,
-		Mask: netMask,
-	}
+	network.Address = netAddr
+	network.Mask = netMask
 	network.Comment = comment
 
 	return network, nil
+}
+
+func (n *Network) Value() (start *ip.Address, end *ip.Address) {
+	// get inverse of the subnet mask
+	invMask := n.Mask ^ addrMax
+
+	start := n.Address
+	// Or the network address with the inverse of the mask to get the last address in the subnet.
+	end := n.Address | invMask
+	return
 }
 
 // Match will return true if passed a network that has a matching address.
@@ -63,6 +73,16 @@ func (n *Network) Match(addr *Network) bool {
 	return reflect.DeepEqual(n.Address, addr.Address)
 }
 
+func (n *Network) Contains(obj NetworkObject) bool {
+	compStart, compEnd := obj.Value()
+	thisStart, thisEnd := n.Value()
+	if compStart > thisStart && compEnd < thisEnd {
+		return true
+	}
+	return false
+}
+
+/*
 // Contains will return true if the network contains the provided object.
 // Only returns true if all of the object is inside the network.
 // i.e. if a range starts inside and finishes outside it will return false.
@@ -84,6 +104,7 @@ func (n *Network) Contains(obj interface{}) (bool, error) {
 
 	return result, err
 }
+*/
 
 func (n *Network) containsHost(h *Host) (bool, error) {
 	return n.Address.Contains(h.Address), nil

@@ -12,13 +12,13 @@ func TestNewNetwork(t *testing.T) {
 		input string
 		err   bool
 	}{
-		{name: "Valid", input: "192.168.1.0/24", err: false},
-		{name: "Different mask", input: "192.168.0.0/23", err: false},
-		{name: "Different address", input: "192.168.2.0/24", err: false},
-		{name: "Invalid mask", input: "192.168.2.0/33", err: true},
+		{name: "Valid", input: "192.168.1.0/255.255.255.0", err: false},
+		{name: "Different mask", input: "192.168.0.0/255.255.254.0", err: false},
+		{name: "Different address", input: "192.168.2.0/255.255.255.0", err: false},
+		{name: "Invalid mask", input: "192.168.2.0/333.333.333.33", err: true},
 		{name: "Invalid address - letters", input: "lorem/ipsum", err: true},
-		{name: "Invalid address - bad ip", input: "355.22.1.0/24", err: true},
-		{name: "Invalid address - not network address", input: "192.168.1.2/24", err: true},
+		{name: "Invalid address - bad ip", input: "355.22.1.0/255.255.255.0", err: true},
+		{name: "Invalid address - not network address", input: "192.168.1.2/255.255.255.0", err: true},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -38,7 +38,7 @@ func TestNewNetwork(t *testing.T) {
 }
 
 func TestNetworkMatch(t *testing.T) {
-	netA, err := NewNetwork("netA", "192.168.1.0", "24", "test network")
+	netA, err := NewNetwork("netA", "192.168.1.0", "255.255.255.0", "test network")
 	if err != nil {
 		t.Fatalf("failed to create test network object: %v", err)
 	}
@@ -47,9 +47,9 @@ func TestNetworkMatch(t *testing.T) {
 		input string
 		want  bool
 	}{
-		{name: "Positive Match", input: "192.168.1.0/24", want: true},
-		{name: "Different mask", input: "192.168.0.0/23", want: false},
-		{name: "Different address", input: "192.168.2.0/24", want: false},
+		{name: "Positive Match", input: "192.168.1.0/255.255.255.0", want: true},
+		{name: "Different mask", input: "192.168.0.0/255.255.254.0", want: false},
+		{name: "Different address", input: "192.168.2.0/255.255.255.0", want: false},
 	}
 
 	for _, tc := range tests {
@@ -67,8 +67,8 @@ func TestNetworkMatch(t *testing.T) {
 	}
 }
 
-func TestNetworkcontainsHost(t *testing.T) {
-	netA, err := NewNetwork("netA", "192.168.1.0", "24", "test network")
+func TestNetworkContainsHost(t *testing.T) {
+	netA, err := NewNetwork("netA", "192.168.1.0", "255.255.255.0", "test network")
 	if err != nil {
 		t.Fatalf("failed to create test network object: %v", err)
 	}
@@ -76,11 +76,10 @@ func TestNetworkcontainsHost(t *testing.T) {
 		name  string
 		input string
 		want  bool
-		err   bool
 	}{
-		{name: "Host contained in Network", input: "192.168.1.3", want: true, err: false},
-		{name: "Host outside network", input: "192.168.2.1", want: false, err: false},
-		{name: "Host address same as network", input: "192.168.1.0", want: true, err: false},
+		{name: "Host contained in Network", input: "192.168.1.3", want: true},
+		{name: "Host outside network", input: "192.168.2.1", want: false},
+		{name: "Host address same as network", input: "192.168.1.0", want: true},
 	}
 
 	for _, tc := range tests {
@@ -89,13 +88,7 @@ func TestNetworkcontainsHost(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create test host object: %v", err)
 			}
-			got, err := netA.containsHost(in)
-			if err != nil {
-				if tc.err {
-					return
-				}
-				t.Fatalf("received error when not expected: %v", err)
-			}
+			got := netA.Contains(in)
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Fatalf("want: %v, got: %v", tc.want, got)
 			}
@@ -103,8 +96,8 @@ func TestNetworkcontainsHost(t *testing.T) {
 	}
 }
 
-func TestNetworkcontainsRange(t *testing.T) {
-	netA, err := NewNetwork("netA", "192.168.1.0", "24", "test network")
+func TestNetworkContainsRange(t *testing.T) {
+	netA, err := NewNetwork("netA", "192.168.1.0", "255.255.255.0", "test network")
 	if err != nil {
 		t.Fatalf("failed to create test network object: %v", err)
 	}
@@ -112,13 +105,12 @@ func TestNetworkcontainsRange(t *testing.T) {
 		name  string
 		input string
 		want  bool
-		err   bool
 	}{
-		{name: "Range contained in Network", input: "192.168.1.3-192.168.1.6", want: true, err: false},
-		{name: "Range outside network", input: "192.168.2.1-192.168.2.5", want: false, err: false},
-		{name: "Range start inside finish outside network", input: "192.168.1.5-192.168.2.3", want: false, err: false},
-		{name: "Range start outside finish inside network", input: "192.168.0.5-192.168.1.33", want: false, err: false},
-		{name: "Range same size as network", input: "192.168.1.0-192.168.1.255", want: true, err: false},
+		{name: "Range contained in Network", input: "192.168.1.3-192.168.1.6", want: true},
+		{name: "Range outside network", input: "192.168.2.1-192.168.2.5", want: false},
+		{name: "Range start inside finish outside network", input: "192.168.1.5-192.168.2.3", want: false},
+		{name: "Range start outside finish inside network", input: "192.168.0.5-192.168.1.33", want: false},
+		{name: "Range same size as network", input: "192.168.1.0-192.168.1.255", want: true},
 	}
 
 	for _, tc := range tests {
@@ -128,13 +120,7 @@ func TestNetworkcontainsRange(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create test range object: %v", err)
 			}
-			got, err := netA.containsRange(in)
-			if err != nil {
-				if tc.err {
-					return
-				}
-				t.Fatalf("received error when not expected: %v", err)
-			}
+			got := netA.Contains(in)
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Fatalf("want: %v, got: %v", tc.want, got)
 			}
@@ -142,8 +128,8 @@ func TestNetworkcontainsRange(t *testing.T) {
 	}
 }
 
-func TestNetworkcontainsNetwork(t *testing.T) {
-	netA, err := NewNetwork("netA", "192.168.1.0", "24", "test network")
+func TestNetworkContainsNetwork(t *testing.T) {
+	netA, err := NewNetwork("netA", "192.168.1.0", "255.255.255.0", "test network")
 	if err != nil {
 		t.Fatalf("failed to create test network object: %v", err)
 	}
@@ -151,12 +137,11 @@ func TestNetworkcontainsNetwork(t *testing.T) {
 		name  string
 		input string
 		want  bool
-		err   bool
 	}{
-		{name: "Matching network", input: "192.168.1.0/24", want: true, err: false},
-		{name: "Contains network", input: "192.168.1.0/26", want: true, err: false},
-		{name: "Outside of network", input: "192.168.5.0/24", want: false, err: false},
-		{name: "Network that contains test network", input: "192.168.0.0/20", want: false, err: false},
+		{name: "Matching network", input: "192.168.1.0/255.255.255.0", want: true},
+		{name: "Contains network", input: "192.168.1.0/255.255.255.192", want: true},
+		{name: "Outside of network", input: "192.168.5.0/255.255.255.0", want: false},
+		{name: "Network that contains test network", input: "192.168.0.0/255.255.240.0", want: false},
 	}
 
 	for _, tc := range tests {
@@ -166,126 +151,10 @@ func TestNetworkcontainsNetwork(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create temp test network object: %v", err)
 			}
-			got, err := netA.containsNetwork(in)
-			if err != nil {
-				if tc.err {
-					return
-				}
-				t.Fatalf("received error when not expected: %v", err)
-			}
+			got := netA.Contains(in)
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Fatalf("want: %v, got: %v", tc.want, got)
 			}
 		})
 	}
-}
-
-func TestNetworkContains(t *testing.T) {
-	netA, err := NewNetwork("netA", "192.168.1.0", "24", "test network")
-	if err != nil {
-		t.Fatalf("failed to create test network object: %v", err)
-	}
-
-	t.Run("Network - Inside testnet", func(t *testing.T) {
-		want := true
-		testNet, err := NewNetwork("testNet", "192.168.1.128", "25", "test network")
-		if err != nil {
-			t.Fatalf("failed to create test network: %v", err)
-		}
-		got, err := netA.Contains(testNet)
-		if err != nil {
-			t.Fatalf("got error when not expected: %v", err)
-		}
-		if got != want {
-			t.Fatalf("expected: %v, got: %v", want, got)
-		}
-	})
-
-	t.Run("Network - Outside testnet", func(t *testing.T) {
-		want := false
-		testNet, err := NewNetwork("testNet", "192.168.2.128", "25", "test network")
-		if err != nil {
-			t.Fatalf("failed to create test network: %v", err)
-		}
-		got, err := netA.Contains(testNet)
-		if err != nil {
-			t.Fatalf("got error when not expected: %v", err)
-		}
-		if got != want {
-			t.Fatalf("expected: %v, got: %v", want, got)
-		}
-	})
-
-	t.Run("Range - Inside testnet", func(t *testing.T) {
-		want := true
-		testRange, err := NewRange("testRange", "192.168.1.128", "192.168.1.150", "test range")
-		if err != nil {
-			t.Fatalf("failed to create test range: %v", err)
-		}
-		got, err := netA.Contains(testRange)
-		if err != nil {
-			t.Fatalf("got error when not expected: %v", err)
-		}
-		if got != want {
-			t.Fatalf("expected: %v, got: %v", want, got)
-		}
-	})
-
-	t.Run("Range - Outside testnet", func(t *testing.T) {
-		want := false
-		testRange, err := NewRange("testRange", "192.168.2.128", "192.168.2.150", "test range")
-		if err != nil {
-			t.Fatalf("failed to create test range: %v", err)
-		}
-		got, err := netA.Contains(testRange)
-		if err != nil {
-			t.Fatalf("got error when not expected: %v", err)
-		}
-		if got != want {
-			t.Fatalf("expected: %v, got: %v", want, got)
-		}
-	})
-
-	t.Run("Host - Inside testnet", func(t *testing.T) {
-		want := true
-		testHost, err := NewHost("testHost", "192.168.1.128", "test host")
-		if err != nil {
-			t.Fatalf("failed to create test range: %v", err)
-		}
-		got, err := netA.Contains(testHost)
-		if err != nil {
-			t.Fatalf("got error when not expected: %v", err)
-		}
-		if got != want {
-			t.Fatalf("expected: %v, got: %v", want, got)
-		}
-	})
-
-	t.Run("Host - Outside testnet", func(t *testing.T) {
-		want := false
-		testHost, err := NewHost("testHost", "192.168.2.128", "test host")
-		if err != nil {
-			t.Fatalf("failed to create test range: %v", err)
-		}
-		got, err := netA.Contains(testHost)
-		if err != nil {
-			t.Fatalf("got error when not expected: %v", err)
-		}
-		if got != want {
-			t.Fatalf("expected: %v, got: %v", want, got)
-		}
-	})
-
-	t.Run("Unsupported type", func(t *testing.T) {
-		want := false
-		invalid := "lorem ipsum"
-		got, err := netA.Contains(invalid)
-		if err == nil {
-			t.Fatalf("didn't receive error when expected")
-		}
-		if got != want {
-			t.Fatalf("expected: %v, got: %v", want, got)
-		}
-
-	})
 }

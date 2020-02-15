@@ -2,7 +2,8 @@ package core
 
 import (
 	"fmt"
-	"net"
+
+	"github.com/Neffats/ip"
 )
 
 // Host represents a single IPv4 host object, a single IPv4 address.
@@ -30,8 +31,8 @@ func NewHost(name, addr, comment string) (*Host, error) {
 }
 
 func (h *Host) Value() (start *ip.Address, end *ip.Address) {
-	start := h.Address
-	end := h.Address
+	start = h.Address
+	end = h.Address
 	return
 }
 

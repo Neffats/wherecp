@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"sort"
 )
 
 type Group struct {
@@ -32,7 +33,7 @@ func NewGroup(name, comment string) *Group {
 func (g *Group) Add(obj interface{}) error {
 	switch v := obj.(type) {
 	case *Host:
-		g.Hosts = append(g.Hosts, v)
+		g.addHost(v)
 	case *Network:
 		g.Networks = append(g.Networks, v)
 	case *Range:
@@ -45,28 +46,15 @@ func (g *Group) Add(obj interface{}) error {
 	return nil
 }
 
-// Contains will return true if the group contains the specified object.
-// The strict parameter specified whether we want to look for strict matches.
-// A strict match is where the objects are the same type and content. We use the Match() function.
-// A non-strict match is where an object can be contained by another.
-// i.e. will return true for host 192.168.1.1 if network 192.168.1.0/24 is in the group.
-// There's probably a better way to do this, but will keep for now.
-func (g *Group) Contains(obj interface{}, strict bool) (bool, error) {
-	var (
-		result bool
-		err    error
-	)
-
-	if strict {
-		result, err = g.containsStrict(obj)
-	} else {
-		result, err = g.containsNotStrict(obj)
-	}
-
-	return result, err
+func (g *Group) addHost(h *Host) {
+	i := sort.Search(len(g.Hosts), func(i int) bool {
+		return *g.Hosts[i].Address > *h.Address
+	})
+	copy(g.Hosts[i+1:], g.Hosts[i:])
+	g.Hosts[i] = h
 }
 
-func (g *Group) containsStrict(obj interface{}) (bool, error) {
+func (g *Group) HasObject(obj interface{}) (bool, error) {
 	switch v := obj.(type) {
 	case *Host:
 		for _, hst := range g.Hosts {
@@ -88,11 +76,11 @@ func (g *Group) containsStrict(obj interface{}) (bool, error) {
 		}
 	case *Group:
 		for _, grp := range g.Groups {
-			contains, err := grp.containsStrict(v)
+			has, err := grp.HasObject(v)
 			if err != nil {
 				return false, err
 			}
-			return contains, nil
+			return has, nil
 		}
 	default:
 		return false, errors.New("unsupported data type")
@@ -100,54 +88,26 @@ func (g *Group) containsStrict(obj interface{}) (bool, error) {
 	return false, nil
 }
 
-func (g *Group) containsNotStrict(obj interface{}) (bool, error) {
-	switch v := obj.(type) {
-	case *Host:
-		for _, hst := range g.Hosts {
-			if hst.Match(v) {
-				return true, nil
-			}
+func (g *Group) Contains(obj NetworkObject) bool {
+	for _, h := range g.Hosts {
+		if h.Match(obj) {
+			return true
 		}
-		for _, net := range g.Networks {
-			match, err := net.Contains(obj)
-			if err != nil {
-				return false, err
-			}
-			if match {
-				return match, nil
-			}
-		}
-		for _, rng := range g.Ranges {
-			match, err := rng.Contains(obj)
-			if err != nil {
-				return false, err
-			}
-			if match {
-				return true, nil
-			}
-		}
-	case *Network, *Range:
-		for _, net := range g.Networks {
-			match, err := net.Contains(obj)
-			if err != nil {
-				return false, err
-			}
-			if match {
-				return match, nil
-			}
-		}
-		for _, rng := range g.Ranges {
-			match, err := rng.Contains(obj)
-			if err != nil {
-				return false, err
-			}
-			if match {
-				return true, nil
-			}
-		}
-	default:
-		return false, errors.New("unsupported data type")
 	}
-
-	return false, nil
+	for _, n := range g.Networks {
+		if n.Contains(obj) {
+			return true
+		}
+	}
+	for _, r := range g.Ranges {
+		if r.Contains(obj) {
+			return true
+		}
+	}
+	for _, grp := range g.Groups {
+		if grp.Contains(obj) {
+			return true
+		}
+	}
+	return false
 }

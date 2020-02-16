@@ -121,34 +121,27 @@ func TestGroupContains(t *testing.T) {
 		input  interface{}
 		strict bool
 		want   bool
-		err    bool
 	}{
-		{name: "Strict - Host match", input: host1, strict: true, want: true, err: false},
-		{name: "Strict - Network match", input: net1, strict: true, want: true, err: false},
-		{name: "Strict - Range match", input: range1, strict: true, want: true, err: false},
-		//{name: "Strict - Group match", input: testGroup, strict: true, want: true, err: false},
-		{name: "Strict - Host no match", input: host2, strict: true, want: false, err: false},
-		{name: "Strict - Network no match", input: net2, strict: true, want: false, err: false},
-		{name: "Strict - Range no match", input: range2, strict: true, want: false, err: false},
-		{name: "Strict - Unsupported type", input: "lorem ipsum", strict: true, want: false, err: true},
-		{name: "Not Strict - Host match", input: host1, strict: false, want: true, err: false},
-		{name: "Not Strict - Network match", input: net2, strict: false, want: true, err: false},
-		{name: "Not Strict - Range match", input: range2, strict: false, want: true, err: false},
-		{name: "Not Strict - Host no match", input: host2, strict: false, want: false, err: false},
-		{name: "Not Strict - Network no match", input: net3, strict: false, want: false, err: false},
-		{name: "Not Strict - Range no match", input: range3, strict: false, want: false, err: false},
-		{name: "Strict - Unsupported type", input: "lorem ipsum", strict: false, want: false, err: true},
+		{name: "Strict - Host match", input: host1, want: true},
+		{name: "Strict - Network match", input: net1, want: true},
+		{name: "Strict - Range match", input: range1, want: true},
+		//{name: "Strict - Group match", input: testGroup,  want: true, },
+		{name: "Strict - Host no match", input: host2, want: false},
+		{name: "Strict - Network no match", input: net2, want: false},
+		{name: "Strict - Range no match", input: range2, want: false},
+		{name: "Strict - Unsupported type", input: "lorem ipsum", want: false},
+		{name: "Not Strict - Host match", input: host1, want: true},
+		{name: "Not Strict - Network match", input: net2, want: true},
+		{name: "Not Strict - Range match", input: range2, want: true},
+		{name: "Not Strict - Host no match", input: host2, want: false},
+		{name: "Not Strict - Network no match", input: net3, want: false},
+		{name: "Not Strict - Range no match", input: range3, want: false},
+		{name: "Strict - Unsupported type", input: "lorem ipsum", want: false},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := testGroup.Contains(tc.input, tc.strict)
-			if err != nil {
-				if tc.err {
-					return
-				}
-				t.Fatalf("got error when not expected: %v", err)
-			}
+			got := testGroup.HasObject(tc.input)
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Fatalf("expected: %v, got: %v", tc.want, got)
 			}

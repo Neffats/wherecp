@@ -23,8 +23,83 @@ func TestAdd(t *testing.T) {
 		}
 	})
 
+	t.Run("Add host higher", func(t *testing.T) {
+		testHost, err := NewHost("testHost", "192.168.2.129", "test host")
+		if err != nil {
+			t.Fatalf("failed to create test host: %v", err)
+		}
+		err = testGroup.Add(testHost)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testHost, testGroup.Hosts[1]) {
+			t.Fatalf("host objects don't match")
+		}
+	})
+
+	t.Run("Add host lower", func(t *testing.T) {
+		testHost, err := NewHost("testHost", "192.168.2.127", "test host")
+		if err != nil {
+			t.Fatalf("failed to create test host: %v", err)
+		}
+		err = testGroup.Add(testHost)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		// Since list is sorted, this host should be at the start.
+		if !reflect.DeepEqual(testHost, testGroup.Hosts[0]) {
+			t.Fatalf("host objects don't match")
+		}
+	})
+
 	t.Run("Add network", func(t *testing.T) {
 		testNetwork, err := NewNetwork("testNetwork", "192.168.2.128", "255.255.255.128", "test network")
+		if err != nil {
+			t.Fatalf("failed to create test network: %v", err)
+		}
+		err = testGroup.Add(testNetwork)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testNetwork, testGroup.Networks[0]) {
+			t.Fatalf("network objects don't match")
+		}
+	})
+	t.Run("Add network higher address", func(t *testing.T) {
+		testNetwork, err := NewNetwork("testNetwork", "192.168.3.128", "255.255.255.128", "test network")
+		if err != nil {
+			t.Fatalf("failed to create test network: %v", err)
+		}
+		err = testGroup.Add(testNetwork)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testNetwork, testGroup.Networks[1]) {
+			t.Fatalf("network objects don't match")
+		}
+	})
+
+	t.Run("Add network lower address", func(t *testing.T) {
+		testNetwork, err := NewNetwork("testNetwork", "192.168.1.128", "255.255.255.128", "test network")
+		if err != nil {
+			t.Fatalf("failed to create test network: %v", err)
+		}
+		err = testGroup.Add(testNetwork)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testNetwork, testGroup.Networks[0]) {
+			t.Fatalf("network objects don't match")
+		}
+	})
+
+	t.Run("Add network lower mask", func(t *testing.T) {
+		testNetwork, err := NewNetwork("testNetwork", "192.168.1.128", "255.255.255.192", "test network")
 		if err != nil {
 			t.Fatalf("failed to create test network: %v", err)
 		}
@@ -49,6 +124,66 @@ func TestAdd(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(testRange, testGroup.Ranges[0]) {
+			t.Fatalf("range objects don't match")
+		}
+	})
+
+	t.Run("Add range higher start", func(t *testing.T) {
+		testRange, err := NewRange("testRange", "192.168.2.130", "192.168.2.150", "test range")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		err = testGroup.Add(testRange)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testRange, testGroup.Ranges[1]) {
+			t.Fatalf("range objects don't match")
+		}
+	})
+
+	t.Run("Add range lower start", func(t *testing.T) {
+		testRange, err := NewRange("testRange", "192.168.1.130", "192.168.2.150", "test range")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		err = testGroup.Add(testRange)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testRange, testGroup.Ranges[0]) {
+			t.Fatalf("range objects don't match")
+		}
+	})
+
+	t.Run("Add range higher end", func(t *testing.T) {
+		testRange, err := NewRange("testRange", "192.168.2.128", "192.168.2.160", "test range")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		err = testGroup.Add(testRange)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testRange, testGroup.Ranges[3]) {
+			t.Fatalf("range objects don't match")
+		}
+	})
+
+	t.Run("Add range lower end", func(t *testing.T) {
+		testRange, err := NewRange("testRange", "192.168.2.128", "192.168.2.140", "test range")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		err = testGroup.Add(testRange)
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testRange, testGroup.Ranges[1]) {
 			t.Fatalf("range objects don't match")
 		}
 	})

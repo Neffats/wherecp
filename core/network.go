@@ -13,6 +13,7 @@ var (
 )
 
 const (
+	// Max value of an IPv4 address.
 	addrMax = ip.Address(4294967295)
 )
 
@@ -28,8 +29,7 @@ type Network struct {
 
 // NewNetwork returns a ptr to a new Network object.
 // addr is the network ip address for the subnet i.e. 192.168.1.0.
-// mask is the network prefix for the netmask i.e. 24 = 255.255.255.0
-// Will return an error if the netmask is not valid i.e. > 32 or < 0 or invalid network address.
+// mask is the subnet mask for the network i.e. 255.255.255.0
 func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 	network := new(Network)
 
@@ -43,7 +43,7 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 	}
 
 	// Check if addr is actually the network address for the subnet.
-	// Address shouldn't change if (bitwise) anded with netmask.
+	// Address shouldn't change if (bitwise) and'd with netmask.
 	if *ip.Mask(netAddr, netMask) != *netAddr {
 		return nil, fmt.Errorf("address not the network address for supplied subnet: %s/%s", addr, mask)
 	}
@@ -56,6 +56,8 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 	return network, nil
 }
 
+// Value returns the first and last address in the Network's Address range (network and broadcast).
+// Statisfies the NetworkObject interface.
 func (n *Network) Value() (start *ip.Address, end *ip.Address) {
 	// get inverse of the subnet mask
 	invMask := *n.Mask ^ addrMax
@@ -73,6 +75,8 @@ func (n *Network) Match(addr *Network) bool {
 	return reflect.DeepEqual(n.Address, addr.Address)
 }
 
+// Contains takes a NetworkObject, returns true if the object's start and end Address
+// falls within the network Address range.
 func (n *Network) Contains(obj NetworkObject) bool {
 	compStart, compEnd := obj.Value()
 	thisStart, thisEnd := n.Value()

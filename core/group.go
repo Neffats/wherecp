@@ -5,6 +5,8 @@ import (
 	"sort"
 )
 
+const defaultGroupCapacity = 100
+
 type Group struct {
 	UID      int
 	Name     string
@@ -35,9 +37,9 @@ func (g *Group) Add(obj interface{}) error {
 	case *Host:
 		g.addHost(v)
 	case *Network:
-		g.Networks = append(g.Networks, v)
+		g.addNetwork(v)
 	case *Range:
-		g.Ranges = append(g.Ranges, v)
+		g.addRange(v)
 	case *Group:
 		g.Groups = append(g.Groups, v)
 	default:
@@ -47,15 +49,52 @@ func (g *Group) Add(obj interface{}) error {
 }
 
 func (g *Group) addHost(h *Host) {
-	if len(g.Hosts) == 0 {
-		g.Hosts = append(g.Hosts, h)
-		return
-	}
 	i := sort.Search(len(g.Hosts), func(i int) bool {
 		return *g.Hosts[i].Address > *h.Address
 	})
-	copy(g.Hosts[i+1:], g.Hosts[i:])
-	g.Hosts[i] = h
+
+	// TODO: Is there a nicer way of doing this?
+	newHosts := make([]*Host, len(g.Hosts)+1)
+	copy(newHosts[:i], g.Hosts[:i])
+	copy(newHosts[i+1:], g.Hosts[i:])
+	newHosts[i] = h
+	g.Hosts = newHosts
+}
+
+func (g *Group) addNetwork(n *Network) {
+	i := sort.Search(len(g.Networks), func(i int) bool {
+		thisStart, thisEnd := g.Networks[i].Value()
+		otherStart, otherEnd := n.Value()
+
+		addr := *thisStart >= *otherStart
+		mask := *thisEnd >= *otherEnd
+		return addr && mask
+	})
+
+	// TODO: Is there a nicer way of doing this?
+	newNets := make([]*Network, len(g.Networks)+1)
+	copy(newNets[:i], g.Networks[:i])
+	copy(newNets[i+1:], g.Networks[i:])
+	newNets[i] = n
+	g.Networks = newNets
+}
+
+func (g *Group) addRange(r *Range) {
+	i := sort.Search(len(g.Ranges), func(i int) bool {
+		thisStart, thisEnd := g.Ranges[i].Value()
+		otherStart, otherEnd := r.Value()
+
+		start := *thisStart >= *otherStart
+		end := *thisEnd >= *otherEnd
+		return start && end
+	})
+
+	// TODO: Is there a nicer way of doing this?
+	newRange := make([]*Range, len(g.Ranges)+1)
+	copy(newRange[:i], g.Ranges[:i])
+	copy(newRange[i+1:], g.Ranges[i:])
+	newRange[i] = r
+	g.Ranges = newRange
 }
 
 func (g *Group) HasObject(obj interface{}) (bool, error) {

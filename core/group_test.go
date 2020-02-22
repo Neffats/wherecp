@@ -24,7 +24,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("Add network", func(t *testing.T) {
-		testNetwork, err := NewNetwork("testNetwork", "192.168.2.128", "25", "test network")
+		testNetwork, err := NewNetwork("testNetwork", "192.168.2.128", "255.255.255.128", "test network")
 		if err != nil {
 			t.Fatalf("failed to create test network: %v", err)
 		}
@@ -62,7 +62,7 @@ func TestAdd(t *testing.T) {
 	})
 }
 
-func TestGroupContains(t *testing.T) {
+func TestHasObject(t *testing.T) {
 	// Set up the objects we'll need, better to move to own function?
 	host1, err := NewHost("host1", "192.168.1.1", "host 1")
 	if err != nil {
@@ -72,18 +72,18 @@ func TestGroupContains(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create host2: %v", err)
 	}
-	net1, err := NewNetwork("net1", "192.168.1.0", "24", "net 1")
+	net1, err := NewNetwork("net1", "192.168.1.0", "255.255.255.0", "net 1")
 	if err != nil {
 		t.Fatalf("failed to create net1: %v", err)
 	}
-	net2, err := NewNetwork("net2", "192.168.1.128", "25", "net 1")
+	net2, err := NewNetwork("net2", "192.168.1.128", "255.255.255.128", "net 1")
 	if err != nil {
 		t.Fatalf("failed to create net2: %v", err)
 	}
-	net3, err := NewNetwork("net2", "192.168.2.128", "25", "net 1")
-	if err != nil {
-		t.Fatalf("failed to create net3: %v", err)
-	}
+	// net3, err := NewNetwork("net2", "192.168.2.128", "255.255.255.128", "net 1")
+	// if err != nil {
+	// 	t.Fatalf("failed to create net3: %v", err)
+	// }
 	range1, err := NewRange("range1", "192.168.1.1", "192.168.1.250", "range 1")
 	if err != nil {
 		t.Fatalf("failed to create range1: %v", err)
@@ -92,12 +92,18 @@ func TestGroupContains(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create range2: %v", err)
 	}
-	range3, err := NewRange("range2", "192.168.2.1", "192.168.2.250", "range 2")
-	if err != nil {
-		t.Fatalf("failed to create range3: %v", err)
-	}
+	// range3, err := NewRange("range2", "192.168.2.1", "192.168.2.250", "range 2")
+	// if err != nil {
+	// 	t.Fatalf("failed to create range3: %v", err)
+	// }
 	testGroup := NewGroup("testGroup", "group for testing")
 	testGroup2 := NewGroup("testGroup2", "group 2")
+
+	// testGroup members:
+	//   - host1
+	//   - range1
+	//   - net1
+	//   - net2
 
 	err = testGroup.Add(host1)
 	if err != nil {
@@ -121,30 +127,44 @@ func TestGroupContains(t *testing.T) {
 		input  interface{}
 		strict bool
 		want   bool
+		err    bool
 	}{
-		{name: "Strict - Host match", input: host1, want: true},
-		{name: "Strict - Network match", input: net1, want: true},
-		{name: "Strict - Range match", input: range1, want: true},
+		{name: "Host match", input: host1, want: true, err: false},
+		{name: "Network match", input: net1, want: true, err: false},
+		{name: "Range match", input: range1, want: true, err: false},
 		//{name: "Strict - Group match", input: testGroup,  want: true, },
-		{name: "Strict - Host no match", input: host2, want: false},
-		{name: "Strict - Network no match", input: net2, want: false},
-		{name: "Strict - Range no match", input: range2, want: false},
-		{name: "Strict - Unsupported type", input: "lorem ipsum", want: false},
-		{name: "Not Strict - Host match", input: host1, want: true},
-		{name: "Not Strict - Network match", input: net2, want: true},
-		{name: "Not Strict - Range match", input: range2, want: true},
-		{name: "Not Strict - Host no match", input: host2, want: false},
-		{name: "Not Strict - Network no match", input: net3, want: false},
-		{name: "Not Strict - Range no match", input: range3, want: false},
-		{name: "Strict - Unsupported type", input: "lorem ipsum", want: false},
+		{name: "Host no match", input: host2, want: false, err: false},
+		{name: "Network no match", input: net2, want: false, err: false},
+		{name: "Range no match", input: range2, want: false, err: false},
+		{name: "Unsupported type", input: "lorem ipsum", want: false, err: true},
+		{name: "Unsupported type", input: "lorem ipsum", want: false, err: true},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := testGroup.HasObject(tc.input)
+			got, err := testGroup.HasObject(tc.input)
+			if err != nil {
+				// if we expected error then return, test was successful.
+				if tc.err {
+					return
+				}
+				t.Errorf("received error from test when not expected: %v", err)
+			}
+			if tc.err {
+				t.Errorf("expected error from test but did not get one")
+			}
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Fatalf("expected: %v, got: %v", tc.want, got)
 			}
 		})
 	}
 }
+
+/*
+	{name: "Not Strict - Host match", input: host1, want: true},
+	{name: "Not Strict - Network match", input: net2, want: true},
+	{name: "Not Strict - Range match", input: range2, want: true},
+	{name: "Not Strict - Host no match", input: host2, want: false},
+	{name: "Not Strict - Network no match", input: net3, want: false},
+	{name: "Not Strict - Range no match", input: range3, want: false},
+*/

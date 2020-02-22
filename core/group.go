@@ -47,6 +47,10 @@ func (g *Group) Add(obj interface{}) error {
 }
 
 func (g *Group) addHost(h *Host) {
+	if len(g.Hosts) == 0 {
+		g.Hosts = append(g.Hosts, h)
+		return
+	}
 	i := sort.Search(len(g.Hosts), func(i int) bool {
 		return *g.Hosts[i].Address > *h.Address
 	})

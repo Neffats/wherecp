@@ -40,7 +40,7 @@ func (h *Host) Value() (start *ip.Address, end *ip.Address) {
 // Returns false if invalid IPv4 address - might be better to return an error?
 func (h *Host) Match(obj NetworkObject) bool {
 	start, end := obj.Value()
-	if start == h.Address && end == h.Address {
+	if *start == *h.Address && *end == *h.Address {
 		return true
 	}
 	return false

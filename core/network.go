@@ -44,7 +44,7 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 
 	// Check if addr is actually the network address for the subnet.
 	// Address shouldn't change if (bitwise) anded with netmask.
-	if ip.Mask(netAddr, netMask) != netAddr {
+	if *ip.Mask(netAddr, netMask) != *netAddr {
 		return nil, fmt.Errorf("address not the network address for supplied subnet: %s/%s", addr, mask)
 	}
 	network.UID = 0
@@ -76,7 +76,7 @@ func (n *Network) Match(addr *Network) bool {
 func (n *Network) Contains(obj NetworkObject) bool {
 	compStart, compEnd := obj.Value()
 	thisStart, thisEnd := n.Value()
-	if *compStart > *thisStart && *compEnd < *thisEnd {
+	if *compStart >= *thisStart && *compEnd <= *thisEnd {
 		return true
 	}
 	return false

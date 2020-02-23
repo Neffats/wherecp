@@ -124,24 +124,73 @@ func (g *Group) addGroup(grp *Group) {
 
 // HasObject returns true if the group has a members object whose type and address matches the supplied object.
 func (g *Group) HasObject(obj interface{}) (bool, error) {
+	// TODO: Make more efficient since lists are now ordered.
 	switch v := obj.(type) {
 	case *Host:
-		for _, hst := range g.Hosts {
-			if hst.Match(v) {
-				return true, nil
-			}
+		var i int
+		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+		if len(g.Hosts) == 1 {
+			i = 0
+		} else {
+			i = sort.Search(len(g.Hosts), func(i int) bool {
+				keySt, keyEnd := v.Value()
+				midSt, midEnd := g.Hosts[i].Value()
+
+				return *keySt == *midSt && *keyEnd == *midEnd
+			})
+		}
+
+		if i == -1 {
+			return false, nil
+		}
+
+		// Double check that objects match.
+		if g.Hosts[i].Match(v) {
+			return true, nil
 		}
 	case *Network:
-		for _, net := range g.Networks {
-			if net.Match(v) {
-				return true, nil
-			}
+		var i int
+		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+		if len(g.Networks) == 1 {
+			i = 0
+		} else {
+			i = sort.Search(len(g.Networks), func(i int) bool {
+				keySt, keyEnd := v.Value()
+				midSt, midEnd := g.Networks[i].Value()
+
+				return *keySt == *midSt && *keyEnd == *midEnd
+			})
+		}
+
+		if i == -1 {
+			return false, nil
+		}
+
+		// Double check that objects match.
+		if g.Networks[i].Match(v) {
+			return true, nil
 		}
 	case *Range:
-		for _, rng := range g.Ranges {
-			if rng.Match(v) {
-				return true, nil
-			}
+		var i int
+		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+		if len(g.Ranges) == 1 {
+			i = 0
+		} else {
+			i = sort.Search(len(g.Ranges), func(i int) bool {
+				keySt, keyEnd := v.Value()
+				midSt, midEnd := g.Ranges[i].Value()
+
+				return *keySt == *midSt && *keyEnd == *midEnd
+			})
+		}
+
+		if i == -1 {
+			return false, nil
+		}
+
+		// Double check that objects match.
+		if g.Ranges[i].Match(v) {
+			return true, nil
 		}
 	case *Group:
 		for _, grp := range g.Groups {
@@ -155,6 +204,35 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 		return false, errors.New("unsupported data type")
 	}
 	return false, nil
+}
+
+// this doesn't work because of the []NetworkObject, but keeping it in for now.
+func binarySearch(left, right int, list []NetworkObject, key NetworkObject) int {
+	if right >= left {
+		mid := left - (right-left)/2
+
+		keySt, keyEnd := key.Value()
+		midSt, midEnd := list[mid].Value()
+
+		if *keySt == *midSt {
+			if *keyEnd == *midEnd {
+				return mid
+			}
+			if *keyEnd > *midEnd {
+				return binarySearch(mid+1, right, list, key)
+			}
+			return binarySearch(left, mid-1, list, key)
+		}
+
+		if *keySt > *midSt {
+			return binarySearch(mid+1, right, list, key)
+		}
+
+		return binarySearch(left, mid-1, list, key)
+
+	}
+
+	return -1
 }
 
 func (g *Group) Contains(obj NetworkObject) bool {

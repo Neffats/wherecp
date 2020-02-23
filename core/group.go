@@ -251,7 +251,13 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 
 	// Check if any of it's group members contain the object.
 	for _, grp := range g.Groups {
-		grp.HasObject(obj)
+		has, err := grp.HasObject(obj)
+		if err != nil {
+			return false, err
+		}
+		if has {
+			return true, nil
+		}
 	}
 	return false, nil
 }

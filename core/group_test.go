@@ -347,10 +347,10 @@ func TestHasObject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create net2: %v", err)
 	}
-	// net3, err := NewNetwork("net2", "192.168.2.128", "255.255.255.128", "net 1")
-	// if err != nil {
-	// 	t.Fatalf("failed to create net3: %v", err)
-	// }
+	net3, err := NewNetwork("net2", "192.168.2.128", "255.255.255.128", "net 1")
+	if err != nil {
+		t.Fatalf("failed to create net3: %v", err)
+	}
 	range1, err := NewRange("range1", "192.168.1.1", "192.168.1.250", "range 1")
 	if err != nil {
 		t.Fatalf("failed to create range1: %v", err)
@@ -400,10 +400,11 @@ func TestHasObject(t *testing.T) {
 		{name: "Host match", input: host1, want: true, err: false},
 		{name: "Network match", input: net1, want: true, err: false},
 		{name: "Range match", input: range1, want: true, err: false},
-		{name: "Strict - Group match", input: testGroup2, want: true, err: false},
+		{name: "Group match", input: testGroup2, want: true, err: false},
 		{name: "Host no match", input: host2, want: false, err: false},
-		{name: "Network no match", input: net2, want: false, err: false},
+		{name: "Network no match", input: net3, want: false, err: false},
 		{name: "Range no match", input: range2, want: false, err: false},
+		{name: "Network match in group member", input: net2, want: true, err: false},
 		{name: "Unsupported type", input: "lorem ipsum", want: false, err: true},
 		{name: "Unsupported type", input: "lorem ipsum", want: false, err: true},
 	}

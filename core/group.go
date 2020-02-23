@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 )
 
@@ -38,6 +39,14 @@ func NewGroup(name, comment string) *Group {
 // Add will add the specified object to the group.
 // Supported types: Host/Network/Range/Group
 func (g *Group) Add(obj interface{}) error {
+	present, err := g.HasObject(obj)
+	if err != nil {
+		return fmt.Errorf("failed to check if object was already a group member: %v", err)
+	}
+	if present {
+		return fmt.Errorf("object is already a member of this group: %s", obj)
+	}
+
 	switch v := obj.(type) {
 	case *Host:
 		g.addHost(v)
@@ -119,7 +128,20 @@ func (g *Group) addRange(r *Range) {
 }
 
 func (g *Group) addGroup(grp *Group) {
-	// not implemented
+	// Ordered alphabetically by Group name.
+	i := sort.Search(len(g.Groups), func(i int) bool {
+		return g.Groups[i].Name > grp.Name
+	})
+
+	// TODO: Is there a nicer way of doing this?
+	// Create a new bigger slice.
+	newGroup := make([]*Group, len(g.Groups)+1)
+	// Shift the slice forward by one at the insert location.
+	copy(newGroup[:i], g.Groups[:i])
+	copy(newGroup[i+1:], g.Groups[i:])
+	// Append group at the insert location.
+	newGroup[i] = g
+	g.Groups = newGroup
 }
 
 // HasObject returns true if the group has a members object whose type and address matches the supplied object.
@@ -127,6 +149,9 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 	// TODO: Make more efficient since lists are now ordered.
 	switch v := obj.(type) {
 	case *Host:
+		if len(g.Hosts) < 1 {
+			return false, nil
+		}
 		var i int
 		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
 		if len(g.Hosts) == 1 {
@@ -140,7 +165,8 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 			})
 		}
 
-		if i == -1 {
+		// Check that what we go makes sense.
+		if i == -1 || i >= len(g.Hosts) {
 			return false, nil
 		}
 
@@ -162,7 +188,8 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 			})
 		}
 
-		if i == -1 {
+		// Check that what we go makes sense.
+		if i == -1 || i >= len(g.Networks) {
 			return false, nil
 		}
 
@@ -184,7 +211,8 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 			})
 		}
 
-		if i == -1 {
+		// Check that what we go makes sense.
+		if i == -1 || i >= len(g.Ranges) {
 			return false, nil
 		}
 

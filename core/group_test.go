@@ -2,18 +2,22 @@ package core
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 )
 
 func TestAdd(t *testing.T) {
 	testGroup := NewGroup("testGroup", "group for testing")
+	var mux sync.Mutex
 
 	t.Run("Add host", func(t *testing.T) {
 		testHost, err := NewHost("testHost", "192.168.2.128", "test host")
 		if err != nil {
 			t.Fatalf("failed to create test host: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testHost)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -28,7 +32,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test host: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testHost)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -43,7 +49,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test host: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testHost)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -59,7 +67,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test network: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testNetwork)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -68,12 +78,15 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("network objects don't match")
 		}
 	})
+
 	t.Run("Add network higher address", func(t *testing.T) {
 		testNetwork, err := NewNetwork("testNetwork", "192.168.3.128", "255.255.255.128", "test network")
 		if err != nil {
 			t.Fatalf("failed to create test network: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testNetwork)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -88,7 +101,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test network: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testNetwork)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -103,7 +118,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test network: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testNetwork)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -118,7 +135,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test range: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testRange)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -133,7 +152,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test range: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testRange)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -148,7 +169,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test range: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testRange)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -163,7 +186,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test range: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testRange)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -178,7 +203,9 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create test range: %v", err)
 		}
+		mux.Lock()
 		err = testGroup.Add(testRange)
+		mux.Unlock()
 		if err != nil {
 			t.Fatalf("got error when not expected: %v", err)
 		}
@@ -188,9 +215,59 @@ func TestAdd(t *testing.T) {
 		}
 	})
 
+	t.Run("Host already present", func(t *testing.T) {
+		testHost, err := NewHost("testHost", "192.168.2.128", "test host")
+		if err != nil {
+			t.Fatalf("failed to create test host: %v", err)
+		}
+		mux.Lock()
+		err = testGroup.Add(testHost)
+		mux.Unlock()
+		if err != nil {
+			// We expected the error so return
+			return
+		}
+
+		t.Fatalf("expected error due to host already being a member of group")
+	})
+
+	t.Run("Network already present", func(t *testing.T) {
+		testNetwork, err := NewNetwork("testNetwork", "192.168.2.128", "255.255.255.128", "test network")
+		if err != nil {
+			t.Fatalf("failed to create test network: %v", err)
+		}
+		mux.Lock()
+		err = testGroup.Add(testNetwork)
+		mux.Unlock()
+		if err != nil {
+			// We expected the error so return
+			return
+		}
+
+		t.Fatalf("expected error due to network already being a member of group")
+	})
+
+	t.Run("Range already present", func(t *testing.T) {
+		testRange, err := NewRange("testRange", "192.168.2.128", "192.168.2.150", "test range")
+		if err != nil {
+			t.Fatalf("failed to create test range: %v", err)
+		}
+		mux.Lock()
+		err = testGroup.Add(testRange)
+		mux.Unlock()
+		if err != nil {
+			// We expected the error so return
+			return
+		}
+
+		t.Fatalf("expected error due to network already being a member of group")
+	})
+
 	t.Run("Unsupported type", func(t *testing.T) {
 		invalid := "lorem ipsum"
+		mux.Lock()
 		err := testGroup.Add(invalid)
+		mux.Unlock()
 		if err == nil {
 			t.Fatalf("didn't receive error when expected")
 		}

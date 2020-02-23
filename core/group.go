@@ -7,6 +7,11 @@ import (
 
 const defaultGroupCapacity = 100
 
+// Group is a structure that groups different object together.
+// Acting as a container for different objects. Each of the item arrays are ordered
+// for efficient searching.
+// The Network objects are ordered by Address, and the Groups
+// are ordered by name.
 type Group struct {
 	UID      int
 	Name     string
@@ -49,19 +54,26 @@ func (g *Group) Add(obj interface{}) error {
 }
 
 func (g *Group) addHost(h *Host) {
+	// Ordered smallest to largets by Address.
 	i := sort.Search(len(g.Hosts), func(i int) bool {
 		return *g.Hosts[i].Address > *h.Address
 	})
 
 	// TODO: Is there a nicer way of doing this?
+	// Create a new bigger slice.
 	newHosts := make([]*Host, len(g.Hosts)+1)
+	// Shift the slice forward by one at the insert location.
 	copy(newHosts[:i], g.Hosts[:i])
 	copy(newHosts[i+1:], g.Hosts[i:])
+	// Append host at the insert location.
 	newHosts[i] = h
 	g.Hosts = newHosts
 }
 
 func (g *Group) addNetwork(n *Network) {
+	// Ordered smallest to largest by network address (first address) first
+	// then by broadcast address (last address) second. Smallest networks will be in
+	// front of larger networks i.e. 192.168.0.0/25 will be before 192.168.0.0/24
 	i := sort.Search(len(g.Networks), func(i int) bool {
 		thisStart, thisEnd := g.Networks[i].Value()
 		otherStart, otherEnd := n.Value()
@@ -72,14 +84,20 @@ func (g *Group) addNetwork(n *Network) {
 	})
 
 	// TODO: Is there a nicer way of doing this?
+	// Create a new bigger slice.
 	newNets := make([]*Network, len(g.Networks)+1)
+	// Shift the slice forward by one at the insert location.
 	copy(newNets[:i], g.Networks[:i])
 	copy(newNets[i+1:], g.Networks[i:])
+	// Append network at the insert location.
 	newNets[i] = n
 	g.Networks = newNets
 }
 
 func (g *Group) addRange(r *Range) {
+	// Ordered smallest to largest by start address (first address) first
+	// then by end address (last address) second. Smaller ranges will come before
+	// larger ranges i.e. 192.168.0.0-192.168.0.10 will be in front of 192.168.0.0-192.168.0.200
 	i := sort.Search(len(g.Ranges), func(i int) bool {
 		thisStart, thisEnd := g.Ranges[i].Value()
 		otherStart, otherEnd := r.Value()
@@ -90,13 +108,21 @@ func (g *Group) addRange(r *Range) {
 	})
 
 	// TODO: Is there a nicer way of doing this?
+	// Create a new bigger slice.
 	newRange := make([]*Range, len(g.Ranges)+1)
+	// Shift the slice forward by one at the insert location.
 	copy(newRange[:i], g.Ranges[:i])
 	copy(newRange[i+1:], g.Ranges[i:])
+	// Append network at the insert location.
 	newRange[i] = r
 	g.Ranges = newRange
 }
 
+func (g *Group) addGroup(grp *Group) {
+	// not implemented
+}
+
+// HasObject returns true if the group has a members object whose type and address matches the supplied object.
 func (g *Group) HasObject(obj interface{}) (bool, error) {
 	switch v := obj.(type) {
 	case *Host:

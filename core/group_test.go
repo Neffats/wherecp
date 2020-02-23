@@ -215,6 +215,48 @@ func TestAdd(t *testing.T) {
 		}
 	})
 
+	t.Run("Add group", func(t *testing.T) {
+		testAddGroup := NewGroup("EFGH", "test group")
+		mux.Lock()
+		err := testGroup.Add(testAddGroup)
+		mux.Unlock()
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testAddGroup, testGroup.Groups[0]) {
+			t.Fatalf("group objects don't match")
+		}
+	})
+
+	t.Run("Add group higher", func(t *testing.T) {
+		testAddGroup := NewGroup("JKLM", "test group")
+		mux.Lock()
+		err := testGroup.Add(testAddGroup)
+		mux.Unlock()
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testAddGroup, testGroup.Groups[1]) {
+			t.Fatalf("group objects don't match")
+		}
+	})
+
+	t.Run("Add group lower", func(t *testing.T) {
+		testAddGroup := NewGroup("ABCD", "test group")
+		mux.Lock()
+		err := testGroup.Add(testAddGroup)
+		mux.Unlock()
+		if err != nil {
+			t.Fatalf("got error when not expected: %v", err)
+		}
+
+		if !reflect.DeepEqual(testAddGroup, testGroup.Groups[0]) {
+			t.Fatalf("group objects don't match")
+		}
+	})
+
 	t.Run("Host already present", func(t *testing.T) {
 		testHost, err := NewHost("testHost", "192.168.2.128", "test host")
 		if err != nil {
@@ -260,7 +302,20 @@ func TestAdd(t *testing.T) {
 			return
 		}
 
-		t.Fatalf("expected error due to network already being a member of group")
+		t.Fatalf("expected error due to range already being a member of group")
+	})
+
+	t.Run("Group already present", func(t *testing.T) {
+		testAddGroup := NewGroup("EFGH", "test group")
+		mux.Lock()
+		err := testGroup.Add(testAddGroup)
+		mux.Unlock()
+		if err != nil {
+			// We expected the error so return
+			return
+		}
+
+		t.Fatalf("expected error due to range already being a member of group")
 	})
 
 	t.Run("Unsupported type", func(t *testing.T) {
@@ -333,6 +388,7 @@ func TestHasObject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to add net2 to group2: %v", err)
 	}
+	err = testGroup.Add(testGroup2)
 
 	tests := []struct {
 		name   string
@@ -344,7 +400,7 @@ func TestHasObject(t *testing.T) {
 		{name: "Host match", input: host1, want: true, err: false},
 		{name: "Network match", input: net1, want: true, err: false},
 		{name: "Range match", input: range1, want: true, err: false},
-		//{name: "Strict - Group match", input: testGroup,  want: true, },
+		{name: "Strict - Group match", input: testGroup2, want: true, err: false},
 		{name: "Host no match", input: host2, want: false, err: false},
 		{name: "Network no match", input: net2, want: false, err: false},
 		{name: "Range no match", input: range2, want: false, err: false},

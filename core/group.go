@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"sort"
 )
 
@@ -36,6 +37,10 @@ func NewGroup(name, comment string) *Group {
 	}
 }
 
+func (g *Group) Match(grp *Group) bool {
+	return reflect.DeepEqual(g, grp)
+}
+
 // Add will add the specified object to the group.
 // Supported types: Host/Network/Range/Group
 func (g *Group) Add(obj interface{}) error {
@@ -55,7 +60,7 @@ func (g *Group) Add(obj interface{}) error {
 	case *Range:
 		g.addRange(v)
 	case *Group:
-		g.Groups = append(g.Groups, v)
+		g.addGroup(v)
 	default:
 		return errors.New("unsupported data type")
 	}
@@ -130,7 +135,7 @@ func (g *Group) addRange(r *Range) {
 func (g *Group) addGroup(grp *Group) {
 	// Ordered alphabetically by Group name.
 	i := sort.Search(len(g.Groups), func(i int) bool {
-		return g.Groups[i].Name > grp.Name
+		return g.Groups[i].Name >= grp.Name
 	})
 
 	// TODO: Is there a nicer way of doing this?
@@ -140,7 +145,7 @@ func (g *Group) addGroup(grp *Group) {
 	copy(newGroup[:i], g.Groups[:i])
 	copy(newGroup[i+1:], g.Groups[i:])
 	// Append group at the insert location.
-	newGroup[i] = g
+	newGroup[i] = grp
 	g.Groups = newGroup
 }
 
@@ -221,15 +226,32 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 			return true, nil
 		}
 	case *Group:
-		for _, grp := range g.Groups {
-			has, err := grp.HasObject(v)
-			if err != nil {
-				return false, err
-			}
-			return has, nil
+		var i int
+		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+		if len(g.Groups) == 1 {
+			i = 0
+		} else {
+			i = sort.Search(len(g.Groups), func(i int) bool {
+				return g.Groups[i].Name == v.Name
+			})
+		}
+
+		// Check that what we go makes sense.
+		if i == -1 || i >= len(g.Groups) {
+			return false, nil
+		}
+
+		// Double check that objects match.
+		if g.Groups[i].Match(v) {
+			return true, nil
 		}
 	default:
 		return false, errors.New("unsupported data type")
+	}
+
+	// Check if any of it's group members contain the object.
+	for _, grp := range g.Groups {
+		grp.HasObject(obj)
 	}
 	return false, nil
 }

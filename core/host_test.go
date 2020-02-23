@@ -49,11 +49,39 @@ func TestHostMatch(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			testHost, err := NewHost("testHost", tc.input, "test host")
+			testHost, err := NewHost("hostA", tc.input, "test host")
 			if err != nil {
 				t.Fatalf("failed to create test host: %v", err)
 			}
 			got := hostA.Match(testHost)
+			if !reflect.DeepEqual(tc.want, got) {
+				t.Fatalf("expected: %v, got: %v", tc.want, got)
+			}
+		})
+	}
+}
+
+func TestHostContains(t *testing.T) {
+	hostA, err := NewHost("hostA", "10.10.10.10", "test host")
+	if err != nil {
+		t.Fatalf("failed to create test host object")
+	}
+	tests := []struct {
+		name  string
+		input string
+		want  bool
+	}{
+		{name: "True match", input: "10.10.10.10", want: true},
+		{name: "No match", input: "10.10.0.0", want: false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			testHost, err := NewHost("hostA", tc.input, "test host")
+			if err != nil {
+				t.Fatalf("failed to create test host: %v", err)
+			}
+			got := hostA.Contains(testHost)
 			if !reflect.DeepEqual(tc.want, got) {
 				t.Fatalf("expected: %v, got: %v", tc.want, got)
 			}

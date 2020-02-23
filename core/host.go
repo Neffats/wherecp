@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/Neffats/ip"
 )
@@ -36,9 +37,13 @@ func (h *Host) Value() (start *ip.Address, end *ip.Address) {
 	return
 }
 
-// Match will return true if addr matches the host's address.
+func (h *Host) Match(obj *Host) bool {
+	return reflect.DeepEqual(h, obj)
+}
+
+// Contains will return true if addr matches the host's address.
 // Returns false if invalid IPv4 address - might be better to return an error?
-func (h *Host) Match(obj NetworkObject) bool {
+func (h *Host) Contains(obj NetworkObject) bool {
 	start, end := obj.Value()
 	if *start == *h.Address && *end == *h.Address {
 		return true

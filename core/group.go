@@ -293,7 +293,7 @@ func binarySearch(left, right int, list []NetworkObject, key NetworkObject) int 
 
 func (g *Group) Contains(obj NetworkObject) bool {
 	for _, h := range g.Hosts {
-		if h.Match(obj) {
+		if h.Contains(obj) {
 			return true
 		}
 	}

@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"reflect"
 	"regexp"
 	"strings"
 
@@ -56,7 +55,7 @@ func (r *Range) Value() (start *ip.Address, end *ip.Address) {
 
 // Match will return true if the passed in range object's address matches.
 func (r *Range) Match(addr *Range) bool {
-	return reflect.DeepEqual(addr.StartAddress, r.StartAddress) && reflect.DeepEqual(addr.EndAddress, r.EndAddress)
+	return *r.StartAddress == *addr.StartAddress && *r.EndAddress == *addr.EndAddress
 }
 
 // Contains will return true if obj is contained by the range.

@@ -3,7 +3,6 @@ package core
 import (
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/Neffats/ip"
 )
@@ -72,7 +71,7 @@ func (n *Network) Value() (start *ip.Address, end *ip.Address) {
 
 // Match will return true if passed a network that has a matching address.
 func (n *Network) Match(addr *Network) bool {
-	return reflect.DeepEqual(n.Address, addr.Address)
+	return *n.Address == *addr.Address && *n.Mask == *addr.Mask
 }
 
 // Contains takes a NetworkObject, returns true if the object's start and end Address

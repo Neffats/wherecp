@@ -513,7 +513,3 @@ func TestGroupContains(t *testing.T) {
 		})
 	}
 }
-
-/*
-
- */

@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/Neffats/ip"
 )
@@ -38,7 +37,7 @@ func (h *Host) Value() (start *ip.Address, end *ip.Address) {
 }
 
 func (h *Host) Match(obj *Host) bool {
-	return reflect.DeepEqual(h, obj)
+	return *h.Address == *obj.Address
 }
 
 // Contains will return true if addr matches the host's address.

@@ -1,5 +1,5 @@
 package core
 
 type PortObject interface {
-	Value() (start int, end int, proto int)
+	Value() (start uint, end uint, proto int)
 }

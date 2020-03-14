@@ -37,8 +37,64 @@ func NewGroup(name, comment string) *Group {
 	}
 }
 
+// Match will return true if the two groups are identical.
 func (g *Group) Match(grp *Group) bool {
 	return reflect.DeepEqual(g, grp)
+}
+
+// MatchContent will return true if both groups contain the same members.
+func (g *Group) MatchContent(grp *Group) bool {
+	// Check if the lengths of the groups match.
+	// If they don't then the two groups must be different.
+	if len(g.Hosts) != len(grp.Hosts) {
+		return false
+	}
+	if len(g.Networks) != len(grp.Networks) {
+		return false
+	}
+	if len(g.Ranges) != len(grp.Ranges) {
+		return false
+	}
+	if len(g.Groups) != len(grp.Groups) {
+		return false
+	}
+
+	var match bool
+
+	// Compare Hosts of groups.
+	// All group members are sorted, so all members should be in the same location.
+	for i := 0; i < len(g.Hosts); i++ {
+		match = g.Hosts[i].Match(grp.Hosts[i])
+		if !match {
+			return false
+		}
+	}
+
+	// Compare Networks of groups.
+	for i := 0; i < len(g.Networks); i++ {
+		match = g.Networks[i].Match(grp.Networks[i])
+		if !match {
+			return false
+		}
+	}
+
+	// Compare Ranges of groups.
+	for i := 0; i < len(g.Ranges); i++ {
+		match = g.Ranges[i].Match(grp.Ranges[i])
+		if !match {
+			return false
+		}
+	}
+
+	// Compare Groups of groups.
+	for i := 0; i < len(g.Groups); i++ {
+		match = g.Groups[i].Match(grp.Groups[i])
+		if !match {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Add will add the specified object to the group.
@@ -46,7 +102,7 @@ func (g *Group) Match(grp *Group) bool {
 func (g *Group) Add(obj interface{}) error {
 	present, err := g.HasObject(obj)
 	if err != nil {
-		return fmt.Errorf("failed to check if object was already a group member: %v", err)
+		return fmt.Errorf("failed to check if object is already a group member: %v", err)
 	}
 	if present {
 		return fmt.Errorf("object is already a member of this group: %s", obj)
@@ -158,7 +214,7 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 			return false, nil
 		}
 		var i int
-		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+		// Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
 		if len(g.Hosts) == 1 {
 			i = 0
 		} else {
@@ -181,7 +237,7 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 		}
 	case *Network:
 		var i int
-		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+		// Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
 		if len(g.Networks) == 1 {
 			i = 0
 		} else {
@@ -204,7 +260,7 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 		}
 	case *Range:
 		var i int
-		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+		// Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
 		if len(g.Ranges) == 1 {
 			i = 0
 		} else {

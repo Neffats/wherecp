@@ -63,7 +63,7 @@ func (p *Port) Value() (start uint, end uint, proto int) {
 }
 
 func (p *Port) Match(prt *Port) bool {
-	return prt.Number == p.Number && prt.Protocol == prt.Protocol
+	return prt.Number == p.Number && prt.Protocol == p.Protocol
 }
 
 func (p *Port) Contains(obj PortObject) bool {

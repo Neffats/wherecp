@@ -1,0 +1,20 @@
+package core
+
+type Rule struct {
+	UID         string
+	Source      *Group
+	Destination *Group
+	Port        *PortGroup
+	Action      bool
+	Comment     string
+}
+
+func NewRule(src, dst *Group, prt *PortGroup, action bool, comment string) *Rule {
+	return &Rule{
+		Source:      src,
+		Destination: dst,
+		Port:        prt,
+		Action:      action,
+		Comment:     comment,
+	}
+}

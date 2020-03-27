@@ -23,6 +23,28 @@ func TestString2Proto(t *testing.T) {
 	}
 }
 
+func TestProto2String(t *testing.T) {
+	tests := []struct {
+		name     string
+		in       int
+		want     string
+	}{
+		{name: "Valid-tcp", in: 0, want: "tcp"},
+		{name: "Valid-icmp", in: 2, want: "icmp"},
+		{name: "Invalid-proto-too-high", in: 10, want: ""},
+		{name: "Invalid-proto-negative-number", in: -1, want: ""},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Proto2String(tc.in)
+			if got != tc.want {
+				t.Fatalf("want: %s, got: %s", tc.want, got)
+			}
+		})
+	}
+}
+
 func TestNewPort(t *testing.T) {
 	tests := []struct {
 		name     string

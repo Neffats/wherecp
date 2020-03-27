@@ -28,7 +28,7 @@ func String2Proto(protocol string) int {
 
 // Proto2String returns the string of the protocol enum.
 func Proto2String(protocol int) string {
-	if protocol < len(proto) || protocol > len(proto) {
+	if protocol < 0 || protocol > len(proto)-1 {
 		return ""
 	}
 	return proto[protocol]

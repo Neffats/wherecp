@@ -51,3 +51,15 @@ func (r *Rule) HasPort(obj interface{}) (bool, error) {
 	}
 	return has, nil
 }
+
+func (r *Rule) ContainsSource(obj NetworkObject) bool {
+	return r.Source.Contains(obj)
+}
+
+func (r *Rule) ContainsDestination(obj NetworkObject) bool {
+	return r.Destination.Contains(obj)
+}
+
+func (r *Rule) ContainsPort(obj PortObject) bool {
+	return r.Port.Contains(obj)
+}

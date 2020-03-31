@@ -202,6 +202,26 @@ func (pg *PortGroup) HasObject(obj interface{}) (bool, error) {
 	return false, nil
 }
 
+// Contains will return true if a port object is contained by a member in the group. 
+func (pg *PortGroup) Contains(obj PortObject) bool {
+	for _, p := range pg.Ports {
+		if p.Contains(obj) {
+			return true
+		}
+	}
+	for _, r := range pg.Ranges {
+		if r.Contains(obj) {
+			return true
+		}
+	}
+	for _, g := range pg.Groups {
+		if g.Contains(obj) {
+			return true
+		}
+	}
+	return false
+}
+
 // Match will return true if both groups are identical.
 func (pg *PortGroup) Match(grp *PortGroup) bool {
 	return reflect.DeepEqual(pg, grp)

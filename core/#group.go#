@@ -321,6 +321,8 @@ func (g *Group) HasHost(h *Host) bool {
     return g.Hosts[i].Match(h)
 }
 
+
+
 // this doesn't work because of the []NetworkObject, but keeping it in for now.
 func binarySearch(left, right int, list []NetworkObject, key NetworkObject) int {
 	if right >= left {

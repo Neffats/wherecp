@@ -211,75 +211,26 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 	switch v := obj.(type) {
 	case *Host:
 		has := g.HasHost(v)
-		return has, nil
+		if has {
+			return has, nil
+		}
 	case *Network:
-		var i int
-		// Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
-		if len(g.Networks) == 1 {
-			i = 0
-		} else {
-			i = sort.Search(len(g.Networks), func(i int) bool {
-				keySt, keyEnd := v.Value()
-				midSt, midEnd := g.Networks[i].Value()
-
-				return *keySt == *midSt && *keyEnd == *midEnd
-			})
-		}
-
-		// Check that what we go makes sense.
-		if i == -1 || i >= len(g.Networks) {
-			return false, nil
-		}
-
-		// Double check that objects match.
-		if g.Networks[i].Match(v) {
-			return true, nil
+		has := g.HasNetwork(v)
+		if has {
+			return has, nil
 		}
 	case *Range:
-		var i int
-		// Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
-		if len(g.Ranges) == 1 {
-			i = 0
-		} else {
-			i = sort.Search(len(g.Ranges), func(i int) bool {
-				keySt, keyEnd := v.Value()
-				midSt, midEnd := g.Ranges[i].Value()
-
-				return *keySt == *midSt && *keyEnd == *midEnd
-			})
-		}
-
-		// Check that what we go makes sense.
-		if i == -1 || i >= len(g.Ranges) {
-			return false, nil
-		}
-
-		// Double check that objects match.
-		if g.Ranges[i].Match(v) {
-			return true, nil
+		has := g.HasRange(v)
+		if has {
+			return has, nil
 		}
 	case *Group:
-		var i int
-		// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
-		if len(g.Groups) == 1 {
-			i = 0
-		} else {
-			i = sort.Search(len(g.Groups), func(i int) bool {
-				return g.Groups[i].Name == v.Name
-			})
-		}
-
-		// Check that what we go makes sense.
-		if i == -1 || i >= len(g.Groups) {
-			return false, nil
-		}
-
-		// Double check that objects match.
-		if g.Groups[i].Match(v) {
-			return true, nil
+		has := g.HasGroup(v)
+		if has {
+			return has, nil
 		}
 	default:
-		return false, errors.New("unsupported data type")
+		return false, fmt.Errorf("unsupported data type: %T", v)
 	}
 
 	// Check if any of it's group members contain the object.
@@ -296,7 +247,7 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 }
 
 func (g *Group) HasHost(h *Host) bool {
-    if len(g.Hosts) < 1 {
+	if len(g.Hosts) < 1 {
 	    return false
     }
     var i int
@@ -319,6 +270,82 @@ func (g *Group) HasHost(h *Host) bool {
 
     // Double check that objects match.
     return g.Hosts[i].Match(h)
+}
+
+func (g *Group) HasNetwork(n *Network) bool {
+	if len(g.Networks) < 1 {
+		return false
+	}
+
+	var i int
+    // Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
+    if len(g.Networks) == 1 {
+	    i = 0
+    } else {
+	    i = sort.Search(len(g.Networks), func(i int) bool {
+		    keySt, keyEnd := n.Value()
+		    midSt, midEnd := g.Networks[i].Value()
+
+		    return *keySt == *midSt && *keyEnd == *midEnd
+	    })
+    }
+
+    // Check that what we go makes sense.
+    if i == -1 || i >= len(g.Networks) {
+	    return false
+    }
+
+    // Double check that objects match.
+    return g.Networks[i].Match(n)
+}
+
+func (g *Group) HasRange(r *Range) bool {
+    var i int
+    // Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
+    if len(g.Ranges) == 1 {
+	    i = 0
+    } else {
+	    i = sort.Search(len(g.Ranges), func(i int) bool {
+		    keySt, keyEnd := r.Value()
+		    midSt, midEnd := g.Ranges[i].Value()
+
+		    return *keySt == *midSt && *keyEnd == *midEnd
+	    })
+    }
+
+    // Check that what we go makes sense.
+    if i == -1 || i >= len(g.Ranges) {
+	    return false
+    }
+
+    // Double check that objects match.
+    return g.Ranges[i].Match(r)
+
+
+}
+
+func (g *Group) HasGroup(grp *Group) bool {
+	if len(g.Groups) < 1 {
+		return false
+	}
+
+	var i int
+	// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
+	if len(g.Groups) == 1 {
+		i = 0
+	} else {
+		i = sort.Search(len(g.Groups), func(i int) bool {
+			return g.Groups[i].Name == grp.Name
+		})
+	}
+
+	// Check that what we go makes sense.
+	if i == -1 || i >= len(g.Groups) {
+		return false
+	}
+
+	// Double check that objects match.
+	return g.Groups[i].Match(grp)
 }
 
 // this doesn't work because of the []NetworkObject, but keeping it in for now.

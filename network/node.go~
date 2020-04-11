@@ -1,0 +1,8 @@
+package network
+
+type Node struct {
+	Hosts HostStore
+	Networks NetworkStore
+	Ranges RangeStore
+	Rules RuleStore
+}

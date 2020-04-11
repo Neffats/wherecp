@@ -25,6 +25,38 @@ func NewRule(src, dst *Group, prt *PortGroup, action bool, comment string) *Rule
 	}
 }
 
+type Haser interface {
+	HasObject(obj interface{}) (bool, error)
+}
+
+func Source() func(*Rule) Haser {
+	return func(r *Rule) Haser {
+		return r.Source
+	}
+}
+
+func Destination() func(*Rule) Haser {
+	return func(r *Rule) Haser {
+		return r.Destination
+	}
+}
+
+func Service() func(*Rule) Haser {
+	return func(r *Rule) Haser {
+		return r.Port
+	}
+}
+
+func (r *Rule) Has(obj interface{}, comp func(*Rule) Haser) (bool, error) {
+	component := comp(r)
+	err, has := component.HasObject(obj)
+	if err != nil {
+		return false, fmt.Errorf("failed to determine if object is in rule: %v", err)
+	}
+
+	return has, nil
+}
+
 // HasSource returns true if the rule contains the object in it's source group.
 func (r *Rule) HasSource(obj interface{}) (bool, error) {
 	has, err := r.Source.HasObject(obj)

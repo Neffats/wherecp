@@ -29,19 +29,19 @@ type Haser interface {
 	HasObject(obj interface{}) (bool, error)
 }
 
-func Source() func(*Rule) Haser {
+func InSource() func(*Rule) Haser {
 	return func(r *Rule) Haser {
 		return r.Source
 	}
 }
 
-func Destination() func(*Rule) Haser {
+func InDestination() func(*Rule) Haser {
 	return func(r *Rule) Haser {
 		return r.Destination
 	}
 }
 
-func Service() func(*Rule) Haser {
+func InService() func(*Rule) Haser {
 	return func(r *Rule) Haser {
 		return r.Port
 	}
@@ -49,7 +49,7 @@ func Service() func(*Rule) Haser {
 
 func (r *Rule) Has(obj interface{}, comp func(*Rule) Haser) (bool, error) {
 	component := comp(r)
-	err, has := component.HasObject(obj)
+	has, err := component.HasObject(obj)
 	if err != nil {
 		return false, fmt.Errorf("failed to determine if object is in rule: %v", err)
 	}

@@ -3,6 +3,8 @@ package rulehandler
 import (
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/Neffats/wherecp/core"
 )
@@ -12,30 +14,64 @@ const (
 )
 
 var (
-	hostPattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\.){3}([1-2]?[0-9]?[0-9])")
-	networkPattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\.){3}([1-2]?[0-9]?[0-9])\/([1-3]?[0-9])")
-	rangePattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\.){3}([1-2]?[0-9]?[0-9])\-([1-2]?[0-9]?[0-9]\.){3}([1-2]?[0-9]?[0-9])")
-	servicePattern = regexp.MustCompile("\w*\/\d*")
+	hostPattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])")
+	networkPattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])\\/([1-3]?[0-9])")
+	rangePattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])\\-([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])")
+	servicePattern = regexp.MustCompile("\\w*\\/\\d*")
 )
 
+type constructer interface {
+	construct() filterFn
+}
+
 type Parser struct {
-	input string
-	s Scanner
+	s *Scanner
+}
+
+type boolOp struct {
+	fn func(...filterFn) filterFn
+	args []constructer
+}
+
+func (b *boolOp) construct() filterFn {
+	constructedArgs := make([]filterFn, 0)
+	for _, a := range b.args {
+		constructedArgs = append(constructedArgs, a.construct())
+	}
+	return b.fn(constructedArgs...)
+}
+
+type hasOp struct {
+	fn func(interface{}, func(*core.Rule) core.Haser) filterFn
+	objArg interface{}
+	compArg func() func(*core.Rule) core.Haser
+}
+
+func (h *hasOp) construct() filterFn {
+	return h.fn(h.objArg, h.compArg())
+}
+
+func NewParser(s *Scanner) *Parser {
+	return &Parser{s: s}
 }
 
 func Parse(input string) (filterFn, error) {
 	s := NewScanner("Filter Scanner", input)
-	p := NewParser(input, s)
+	p := NewParser(s)
 
-	for tok := s.Next(); tok != EOF {
+	var filter filterFn
+	var err error
+
+	for tok := s.Next(); tok.Type != EOF; {
 		switch tok.Type {
 		case LeftParen:
-			filter, err := p.parseKeyword()
+			filter, err = p.parseKeyword()
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse keyword: %v", err)
 			}
 		}
 	}
+	return filter, nil
 }
 
 type object struct {
@@ -47,12 +83,14 @@ type object struct {
 }
 
 func (p *Parser) parseKeyword() (filterFn, error) {
-	for tok := p.s.Next(); tok.Type != RightParen {
+	var filter filterFn
+	for tok := p.s.Next(); tok.Type != RightParen; {
 		if tok.Type != Keyword {
 			return nil, fmt.Errorf("expected a keyword but got: %s", tok.Value)
 		}
-		keyword := tok.Value
+		//keyword := tok.Value
 		tok = p.s.Next()
+		
 
 		obj := object{}
 		var err error
@@ -92,6 +130,7 @@ func (p *Parser) parseKeyword() (filterFn, error) {
 			}
 		}
 	}
+	return filter, nil
 }
 
 func (p *Parser) parseHost(token string) (*core.Host, error) {
@@ -99,7 +138,7 @@ func (p *Parser) parseHost(token string) (*core.Host, error) {
 }
 
 func (p *Parser) parseNetwork(token string) (*core.Network, error) {
-	args := strings.Split(token)
+	args := strings.Split(token, "/")
 	if len(args) != 2 {
 		return nil, fmt.Errorf("invalid network string: %s", token)
 	}
@@ -108,4 +147,30 @@ func (p *Parser) parseNetwork(token string) (*core.Network, error) {
 		return nil, fmt.Errorf("invalid subnet mask: %s", token)
 	}
 	return core.NewNetwork("filter network", args[0], mask, "")
+}
+
+func (p *Parser) parseRange(token string) (*core.Range, error) {
+	// Expected format: 192.168.1.1-192.168.1.5
+	args := strings.Split(token, "-")
+	if len(args) != 2 {
+		return nil, fmt.Errorf("invalid range string: %s", token)
+	}
+	return core.NewRange("filter range", args[0], args[1], "")
+}
+
+func (p *Parser) parseService(token string) (*core.Port, error) {
+	// Expected format: tcp/443
+	args := strings.Split(token, "/")
+	if len(args) != 2 {
+		return nil, fmt.Errorf("invalid service string: %s", token)
+	}
+	portNo, err := strconv.ParseUint(args[1], 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert port number to int: %v", err)
+	}
+	return core.NewPort("filter port", uint(portNo), args[0], "")
+}
+
+func (p *Parser) parseGroup(token string) (*core.Group, error) {
+	return core.NewGroup(token, ""), nil
 }

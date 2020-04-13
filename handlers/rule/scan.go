@@ -1,6 +1,8 @@
 package rulehandler
 
 import (
+	"fmt"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -16,6 +18,8 @@ const (
 	Newline
 )
 
+const eof = -1
+
 type Token struct {
 	Type TokenType
 	Value string
@@ -27,7 +31,7 @@ type stateFn func(*Scanner) stateFn
 
 type Scanner struct {
 	name string
-	tokens <-chan Token
+	tokens chan Token
 	input string
 	state stateFn
 	
@@ -38,7 +42,7 @@ type Scanner struct {
 }
 
 func NewScanner(name, input string) *Scanner {
-	return Scanner{
+	return &Scanner{
 		name: name,
 		tokens: make(chan Token, 2),
 		input: input,
@@ -71,22 +75,23 @@ func (s *Scanner) Next() Token {
 // Tokens channel ready to be consumed. The buffer is then cleared and
 // set to the current position in the input.
 func (s *Scanner) emit(t TokenType) {
-	s.Tokens <- Token{
+	s.tokens <- Token{
 		Type: t,
-		Value: s.Input[s.Start: this.Pos],
+		Value: s.input[s.start: s.pos],
 	}
 	// Reset the buffer.
-	s.Start = s.Pos
+	s.start = s.pos
 }
 
 func (s *Scanner) next() rune {
-	if s.Pos >= len(s.Input) {
+	if s.pos >= len(s.input)-1 {
 		s.width = 0
-		return eof
+		return eof 
 	}
-	rune, s.width = utf8.DecodeInString(l.input[l.pos:])
+	r, w := utf8.DecodeRuneInString(s.input[s.pos:])
+	s.width = w
 	s.pos += s.width
-	return rune
+	return r
 }
 
 func (s *Scanner) ignore() {
@@ -97,10 +102,10 @@ func (s *Scanner) backup() {
 	s.pos -= s.width
 }
 
-func (s *Scanner) peek() int {
-	rune := s.next()
+func (s *Scanner) peek() rune {
+	r := s.next()
 	s.backup()
-	return rune
+	return r
 }
 
 func (s *Scanner) accept(valid string) bool {
@@ -112,7 +117,7 @@ func (s *Scanner) accept(valid string) bool {
 }
 
 func (s *Scanner) acceptRun(valid string) {
-	for strings.IndexRune(valid, l.next()) >= 0 {
+	for strings.IndexRune(valid, s.next()) >= 0 {
 	}
 	s.backup()
 }
@@ -124,10 +129,10 @@ func lexAny(s *Scanner) stateFn {
 	case r == '\n':
 		s.emit(Newline)
 		return lexAny
-	case r == "(":
+	case r == '(':
 		s.emit(LeftParen)
 		return lexKeyword
-	case r == ")":
+	case r == ')':
 		s.emit(RightParen)
 		return lexAny
 	case isSpace(r):
@@ -140,6 +145,9 @@ func lexAny(s *Scanner) stateFn {
 
 func lexKeyword(s *Scanner) stateFn {
 	for !isSpace(s.peek()) {
+		if s.peek() == eof {
+			return nil
+		}
 		s.next()
 	}
 	s.emit(Keyword)
@@ -148,26 +156,38 @@ func lexKeyword(s *Scanner) stateFn {
 
 func lexParam(s *Scanner) stateFn {
 	s.skipWhitespace()
-	switch r := s.next() {
-	case r == "(":
+	r := s.next()
+	switch {
+	case r == eof:
+		return nil
+	case r == '(':
 		s.emit(LeftParen)
-		return lexParam
+		return lexKeyword
 	case r == '"':
 		s.emit(Quote)
 		return lexInsideQuote
-	case isAlphanumeric(r):
-		for !isSpace(s.peek()) {
+	case isAlphaNumeric(r):
+		for isAlphaNumeric(s.peek()) {
 			s.next()
 		}
 		s.emit(Parameter)
 		return lexAny
+	case r == ')':
+		return lexAny
 	default:
-		s.errorf("")
+		s.errorf("expected parameter but got: %U", r)
 	}
+	return s.errorf("reached unreachable space")
 }
 
 func lexInsideQuote(s *Scanner) stateFn {
-	for s.peek() != '"' {
+	if s.peek() == eof {
+		return nil
+	}
+	for s.peek() != '"' { 
+		if s.peek() == eof {
+			return nil
+		}
 		s.next()
 	}
 	s.emit(Parameter)
@@ -176,8 +196,11 @@ func lexInsideQuote(s *Scanner) stateFn {
 
 func lexClosingQuote(s *Scanner) stateFn {
 	r := s.next()
+	if r == eof {
+		return nil
+	}
 	if r != '"' {
-		return s.errorf("expected closing quote but got: %s", r)
+		return s.errorf("expected closing quote but got: %U", r)
 	}
 	s.emit(Quote)
 	return lexAny
@@ -196,7 +219,11 @@ func (s *Scanner) errorf(format string, args ...interface{}) stateFn {
 }
 
 func isAlphaNumeric(r rune) bool {
-	return r == "_" || unicode.IsLetter(r) || unicode.IsDigit(r)
+	return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r)
+}
+
+func isParen(r rune) bool {
+	return r == '(' ||  r == ')'
 }
 	
 func isSpace(r rune) bool {

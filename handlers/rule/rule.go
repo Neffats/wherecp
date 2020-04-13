@@ -1,6 +1,8 @@
 package rulehandler
 
 import(
+	"fmt"
+	
 	"github.com/Neffats/wherecp/core"
 )
 
@@ -32,7 +34,7 @@ func And(args ...filterFn) filterFn {
 func Or(args ...filterFn) filterFn {
 	return func(r *core.Rule) (bool, error) {
 		for _, arg := range args {
-			res, err := arg()
+			res, err := arg(r)
 			if err != nil {
 				return false, err
 			}
@@ -45,7 +47,7 @@ func Or(args ...filterFn) filterFn {
 }
 
 func Not(arg filterFn) filterFn {
-	return func(r *Rule) (bool, error) {
+	return func(r *core.Rule) (bool, error) {
 		res, err := arg(r)
 		if err != nil {
 			return false, err
@@ -63,7 +65,7 @@ func Not(arg filterFn) filterFn {
 //   filter := Has(hostA, InDestination())
 //   result, err := filter(ruleA)
 func Has(obj interface{}, comp func(*core.Rule) core.Haser) filterFn {
-	return func(r *Rule) (bool, error) {
+	return func(r *core.Rule) (bool, error) {
 		component := comp(r)
 		has, err := component.HasObject(obj)
 		if err != nil {
@@ -75,7 +77,7 @@ func Has(obj interface{}, comp func(*core.Rule) core.Haser) filterFn {
 }
 
 func ContainsNet(obj core.NetworkObject, comp func(*core.Rule) core.NetContainser) filterFn {
-	return func(r *Rule) (bool, error) {
+	return func(r *core.Rule) (bool, error) {
 		component := comp(r)
 		contains := component.Contains(obj)
 		return contains, nil
@@ -83,15 +85,16 @@ func ContainsNet(obj core.NetworkObject, comp func(*core.Rule) core.NetContainse
 }
 
 func ContainsPort(obj core.PortObject) filterFn {
-	return func(r *Rule) (bool, error) {
+	return func(r *core.Rule) (bool, error) {
 		contains := r.Port.Contains(obj)
 		return contains, nil
 	}
 }
 
 // (and (has "192.168.1.1" (in dest)) (has "8.8.8.8" (in src)) (contains "tcp/80" (in svc)))
-
+/*
 func CreateFilter(source string) filterFn {
 	tokens := LexFilter(source)
 	filter := ParseTokens(tokens)
 }
+*/

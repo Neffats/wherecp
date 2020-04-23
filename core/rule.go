@@ -37,6 +37,19 @@ func HasInDestination() func(*Rule) Haser {
 	}
 }
 
+func merge(name string, g1, g2 *Group) *Group {
+	merged := NewGroup(name, "")
+	merged.addGroup(g1)
+	merged.addGroup(g2)
+	return merged
+}
+
+func HasInAny() func(*Rule) Haser {
+	return func(r *Rule) Haser {
+		return merge("Any", r.Source, r.Destination)
+	}
+}
+
 func HasInService() func(*Rule) Haser {
 	return func(r *Rule) Haser {
 		return r.Port

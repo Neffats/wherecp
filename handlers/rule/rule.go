@@ -11,7 +11,8 @@ type filterFn func(*core.Rule)(bool, error)
 
 // And takes a number of filterFn functions, args, and returns a
 // single filterFn. The returned function returns true only if all
-// filterFn functions in args return true.
+// filterFn functions in args return true. With this you can chain
+// filters together to make a more complex filter.
 //
 // Example:
 //   filter := And(Has(hostA, InSource()), Has(HostB, InDestintation()))

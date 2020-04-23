@@ -123,6 +123,7 @@ func (s *Scanner) acceptRun(valid string) {
 }
 
 func lexAny(s *Scanner) stateFn {
+	s.skipWhitespace()
 	switch r := s.next(); {
 	case r == eof:
 		return nil
@@ -134,9 +135,6 @@ func lexAny(s *Scanner) stateFn {
 		return lexKeyword
 	case r == ')':
 		s.emit(RightParen)
-		return lexAny
-	case isSpace(r):
-		s.skipWhitespace()
 		return lexAny
 	default:
 		return lexParam
@@ -207,6 +205,9 @@ func lexClosingQuote(s *Scanner) stateFn {
 }
 	
 func (s *Scanner) skipWhitespace() {
+	if !isSpace(s.peek()) {
+		return
+	}
 	for isSpace(s.peek()) {
 		s.next()
 	}

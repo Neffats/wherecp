@@ -1,13 +1,13 @@
 package rulehandler
 
-import(
+import (
 	"fmt"
-	
+
 	"github.com/Neffats/wherecp/core"
 )
 
-// filterFn 
-type filterFn func(*core.Rule)(bool, error)
+// filterFn
+type filterFn func(*core.Rule) (bool, error)
 
 // And takes a number of filterFn functions, args, and returns a
 // single filterFn. The returned function returns true only if all

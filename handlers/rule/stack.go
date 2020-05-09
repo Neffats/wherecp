@@ -4,7 +4,7 @@ type fnStack struct {
 	data []string
 }
 
-func NewfnStack() *fnStack{
+func NewfnStack() *fnStack {
 	return &fnStack{
 		data: make([]string, 0),
 	}
@@ -20,7 +20,7 @@ func (s *fnStack) Pop() string {
 	}
 
 	item := s.data[len(s.data)-1]
-	s.data = s.data[0:len(s.data)-1]
+	s.data = s.data[0 : len(s.data)-1]
 	return item
 }
 

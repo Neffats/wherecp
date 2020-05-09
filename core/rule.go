@@ -1,5 +1,9 @@
 package core
 
+import (
+	"github.com/google/uuid"
+)
+
 // Rule is a representation of a firewall rule.
 type Rule struct {
 	UID         string
@@ -12,7 +16,9 @@ type Rule struct {
 
 // NewRule returns a pointer to a new Rule object.
 func NewRule(src, dst *Group, prt *PortGroup, action bool, comment string) *Rule {
+	uid := uuid.New()
 	return &Rule{
+		UID: uid.String(),
 		Source:      src,
 		Destination: dst,
 		Port:        prt,

@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/Neffats/ip"
+	"github.com/google/uuid"
 )
 
 // Host represents a single IPv4 host object, a single IPv4 address.
 // Used by firewalls to allow single hosts access to a resource.
 type Host struct {
-	UID     int
+	UID     string
 	Name    string
 	Address *ip.Address
 	Comment string
@@ -22,8 +23,9 @@ func NewHost(name, addr, comment string) (*Host, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid host address: %v", err)
 	}
+	uid := uuid.New()
 	return &Host{
-		UID:     0,
+		UID:     uid.String(),
 		Name:    name,
 		Address: address,
 		Comment: comment,

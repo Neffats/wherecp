@@ -21,7 +21,7 @@ const (
 const eof = -1
 
 type Token struct {
-	Type TokenType
+	Type  TokenType
 	Value string
 }
 
@@ -30,26 +30,26 @@ type TokenType int
 type stateFn func(*Scanner) stateFn
 
 type Scanner struct {
-	name string
+	name   string
 	tokens chan Token
-	input string
-	state stateFn
-	
+	input  string
+	state  stateFn
+
 	// Used as a buffer for the input.
 	start int
-	pos int
+	pos   int
 	width int
 }
 
 func NewScanner(name, input string) *Scanner {
 	return &Scanner{
-		name: name,
+		name:   name,
 		tokens: make(chan Token, 2),
-		input: input,
-		state: lexAny,
-		start: 0,
-		pos: 0,
-		width: 0,
+		input:  input,
+		state:  lexAny,
+		start:  0,
+		pos:    0,
+		width:  0,
 	}
 }
 
@@ -76,8 +76,8 @@ func (s *Scanner) Next() Token {
 // set to the current position in the input.
 func (s *Scanner) emit(t TokenType) {
 	s.tokens <- Token{
-		Type: t,
-		Value: s.input[s.start: s.pos],
+		Type:  t,
+		Value: s.input[s.start:s.pos],
 	}
 	// Reset the buffer.
 	s.start = s.pos
@@ -86,7 +86,7 @@ func (s *Scanner) emit(t TokenType) {
 func (s *Scanner) next() rune {
 	if s.pos >= len(s.input)-1 {
 		s.width = 0
-		return eof 
+		return eof
 	}
 	r, w := utf8.DecodeRuneInString(s.input[s.pos:])
 	s.width = w
@@ -123,7 +123,9 @@ func (s *Scanner) acceptRun(valid string) {
 }
 
 func lexAny(s *Scanner) stateFn {
-	s.skipWhitespace()
+	if isSpace(s.peek()) {
+		s.skipWhitespace()
+	}
 	switch r := s.next(); {
 	case r == eof:
 		return nil
@@ -173,7 +175,7 @@ func lexParam(s *Scanner) stateFn {
 	case r == ')':
 		return lexAny
 	default:
-		s.errorf("expected parameter but got: %U", r)
+		return s.errorf("expected parameter but got: %U", r)
 	}
 	return s.errorf("reached unreachable space")
 }
@@ -182,7 +184,7 @@ func lexInsideQuote(s *Scanner) stateFn {
 	if s.peek() == eof {
 		return nil
 	}
-	for s.peek() != '"' { 
+	for s.peek() != '"' {
 		if s.peek() == eof {
 			return nil
 		}
@@ -203,7 +205,7 @@ func lexClosingQuote(s *Scanner) stateFn {
 	s.emit(Quote)
 	return lexAny
 }
-	
+
 func (s *Scanner) skipWhitespace() {
 	if !isSpace(s.peek()) {
 		return
@@ -224,9 +226,9 @@ func isAlphaNumeric(r rune) bool {
 }
 
 func isParen(r rune) bool {
-	return r == '(' ||  r == ')'
+	return r == '(' || r == ')'
 }
-	
+
 func isSpace(r rune) bool {
 	return r == ' ' || r == '\t'
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Neffats/ip"
+	"github.com/google/uuid"
 )
 
 var (
@@ -19,7 +20,7 @@ const (
 // Network represents an IPv4 subnet.
 // Used by firewalls to allow whole networks access to a resource.
 type Network struct {
-	UID     int
+	UID     string
 	Name    string
 	Address *ip.Address
 	Mask    *ip.Address
@@ -46,7 +47,8 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 	if *ip.Mask(netAddr, netMask) != *netAddr {
 		return nil, fmt.Errorf("address not the network address for supplied subnet: %s/%s", addr, mask)
 	}
-	network.UID = 0
+	uid := uuid.New()
+	network.UID = uid.String()
 	network.Name = name
 	network.Address = netAddr
 	network.Mask = netMask

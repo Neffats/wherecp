@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+
+	"github.com/google/uuid"
 )
 
 // PortGroup groups together different Port, PortRanges and other PortGroup objects.
 type PortGroup struct {
-	UID     int
+	UID     string
 	Name    string
 	Ports   []*Port
 	Ranges  []*PortRange
@@ -19,8 +21,9 @@ type PortGroup struct {
 
 // NewPortGroup returns a new empty oort group.
 func NewPortGroup(name, comment string) *PortGroup {
+	uid := uuid.New()
 	return &PortGroup{
-		UID:     0,
+		UID:     uid.String(),
 		Name:    name,
 		Ports:   make([]*Port, 0),
 		Ranges:  make([]*PortRange, 0),

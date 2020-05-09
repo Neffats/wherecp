@@ -89,3 +89,30 @@ func TestScannerOther(t *testing.T) {
 		pos++
 	}
 }
+
+func TestScanner3(t *testing.T) {
+	input := "(has \"192.168.1.1\")"
+	s := NewScanner("Test Scanner", input)
+	var expected = []Token{
+		{LeftParen, "("},
+		{Keyword, "has"},
+		{Quote, "\""},
+		{Parameter, "192.168.1.1"},
+		{Quote, "\""},
+		{RightParen, ")"},
+	}
+	pos := 0
+	for {
+		tok := s.Next()
+		if tok.Type == EOF {
+			if pos != len(expected)-1 {
+				t.Fatalf("got EOF before end of test")
+			}
+			return
+		}
+		if !reflect.DeepEqual(tok, expected[pos]) {
+			t.Fatalf("\nexpected: %v\ngot: %v\npos: %d", expected[pos], tok, pos)
+		}
+		pos++
+	}
+}

@@ -316,7 +316,7 @@ func TestAdd(t *testing.T) {
 			return
 		}
 
-		t.Fatalf("expected error due to range already being a member of group")
+		t.Fatalf("expected error due to group already being a member of group")
 	})
 
 	t.Run("Unsupported type", func(t *testing.T) {

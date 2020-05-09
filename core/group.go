@@ -3,8 +3,9 @@ package core
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"sort"
+
+	"github.com/google/uuid"
 )
 
 const defaultGroupCapacity = 100
@@ -15,7 +16,7 @@ const defaultGroupCapacity = 100
 // The Network objects are ordered by Address, and the Groups
 // are ordered by name.
 type Group struct {
-	UID      int
+	UID      string
 	Name     string
 	Hosts    []*Host
 	Networks []*Network
@@ -26,8 +27,9 @@ type Group struct {
 
 // NewGroup returns a new empty group.
 func NewGroup(name, comment string) *Group {
+	uid := uuid.New()
 	return &Group{
-		UID:      0,
+		UID:      uid.String(),
 		Name:     name,
 		Hosts:    make([]*Host, 0),
 		Networks: make([]*Network, 0),
@@ -39,7 +41,10 @@ func NewGroup(name, comment string) *Group {
 
 // Match will return true if the two groups are identical.
 func (g *Group) Match(grp *Group) bool {
-	return reflect.DeepEqual(g, grp)
+	if grp.Name == g.Name && g.MatchContent(grp) {
+		return true
+	}
+	return false
 }
 
 // MatchContent will return true if both groups contain the same members.

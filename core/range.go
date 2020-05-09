@@ -5,13 +5,14 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/Neffats/ip"
 )
 
 // Range represents a range of IPv4 addresses.
 // The start address must be smaller than the end address.
 type Range struct {
-	UID          int
+	UID          string
 	Name         string
 	StartAddress *ip.Address
 	EndAddress   *ip.Address
@@ -37,7 +38,8 @@ func NewRange(name, start, end, comment string) (*Range, error) {
 	if *rangeStart > *rangeEnd {
 		return r, fmt.Errorf("range start address must be less than the end address: %s-%s", start, end)
 	}
-	r.UID = 0
+	uid := uuid.New()
+	r.UID = uid.String()
 	r.Name = name
 	r.StartAddress = rangeStart
 	r.EndAddress = rangeEnd

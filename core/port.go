@@ -3,6 +3,8 @@ package core
 import (
 	"fmt"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -35,7 +37,7 @@ func Proto2String(protocol int) string {
 }
 
 type Port struct {
-	UID      int
+	UID      string
 	Name     string
 	Number   uint
 	Protocol int
@@ -47,7 +49,9 @@ func NewPort(name string, number uint, protocol, comment string) (*Port, error) 
 	if protoEnum == -1 {
 		return nil, fmt.Errorf("failed to create new Port object because invalid protocol provided: %s", protocol)
 	}
+	uid := uuid.New()
 	return &Port{
+		UID: uid.String(),
 		Name:     name,
 		Number:   number,
 		Protocol: protoEnum,

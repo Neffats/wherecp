@@ -9,14 +9,12 @@ import (
 	"github.com/Neffats/wherecp/core"
 )
 
-const (
-	
-)
+const ()
 
 var (
-	hostPattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])")
+	hostPattern    = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])")
 	networkPattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])\\/([1-3]?[0-9])")
-	rangePattern = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])\\-([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])")
+	rangePattern   = regexp.MustCompile("([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])\\-([1-2]?[0-9]?[0-9]\\.){3}([1-2]?[0-9]?[0-9])")
 	servicePattern = regexp.MustCompile("\\w*\\/\\d*")
 )
 
@@ -29,7 +27,7 @@ type Parser struct {
 }
 
 type boolOp struct {
-	fn func(...filterFn) filterFn
+	fn   func(...filterFn) filterFn
 	args []constructer
 }
 
@@ -42,8 +40,8 @@ func (b *boolOp) construct() filterFn {
 }
 
 type hasOp struct {
-	fn func(interface{}, func(*core.Rule) core.Haser) filterFn
-	objArg interface{}
+	fn      func(interface{}, func(*core.Rule) core.Haser) filterFn
+	objArg  interface{}
 	compArg func() func(*core.Rule) core.Haser
 }
 
@@ -62,7 +60,7 @@ func Parse(input string) (filterFn, error) {
 	var filter constructer
 	var err error
 
-	tok := s.Next();
+	tok := s.Next()
 	if tok.Type == EOF {
 		return nil, fmt.Errorf("EOF")
 	}
@@ -84,7 +82,7 @@ func Parse(input string) (filterFn, error) {
 func (p *Parser) parseKeyword() (constructer, error) {
 	var out constructer
 	var err error
-	
+
 	tok := p.s.Next()
 	if tok.Type != Keyword {
 		return nil, fmt.Errorf("expected keyword but got: %s", tok.Value)
@@ -106,7 +104,7 @@ func (p *Parser) parseKeyword() (constructer, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse HAS: %v", err)
 		}
-	}	
+	}
 	return out, nil
 }
 
@@ -151,7 +149,7 @@ func (p *Parser) parseHas() (constructer, error) {
 		out.compArg = core.HasInService
 	}
 	return &out, nil
-	
+
 }
 
 func (p *Parser) parseHasNetwork() (func() func(*core.Rule) core.Haser, error) {
@@ -173,7 +171,8 @@ func (p *Parser) parseHasNetwork() (func() func(*core.Rule) core.Haser, error) {
 	case RightParen:
 		return core.HasInAny, nil
 	}
-	return nil, fmt.Errorf("expected IN or closing parameter but got: %s", tok.Value)
+	return nil, fmt.Errorf("expected IN keyword or closing parameter but got: %s",
+		tok.Value)
 }
 
 func (p *Parser) parseHasParam() (interface{}, error) {

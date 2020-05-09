@@ -6,13 +6,15 @@ import (
 	"testing"
 
 	"github.com/Neffats/ip"
+	"github.com/google/uuid"
 )
 
 func TestNewRange(t *testing.T) {
 	start := ip.Address(3232235777)
 	end := ip.Address(3232236030)
+	uid := uuid.New()
 	testRange := &Range{
-		UID:          0,
+		UID:          uid.String(),
 		Name:         "testRange",
 		StartAddress: &start,
 		EndAddress:   &end,
@@ -37,8 +39,17 @@ func TestNewRange(t *testing.T) {
 				}
 				t.Fatalf("failed to create test range object: %v", err)
 			}
-			if !reflect.DeepEqual(testRange, got) {
-				t.Fatalf("created range didn't match.")
+			if !reflect.DeepEqual(testRange.Name, got.Name) {
+				t.Fatalf("Name of created range didn't match.")
+			}
+			if !reflect.DeepEqual(testRange.StartAddress, got.StartAddress) {
+				t.Fatalf("start address of created range didn't match.")
+			}
+			if !reflect.DeepEqual(testRange.EndAddress, got.EndAddress) {
+				t.Fatalf("end address of created range didn't match.")
+			}
+			if !reflect.DeepEqual(testRange.Comment, got.Comment) {
+				t.Fatalf("comment of created range didn't match.")
 			}
 		})
 

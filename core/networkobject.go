@@ -4,10 +4,18 @@ import (
 	"github.com/Neffats/ip"
 )
 
-type NetworkObject interface {
-	Value() (start *ip.Address, end *ip.Address)
+// NetworkObject is the most basic representation of any supported object type.
+// Every object can be converted to this type, this is how different types can be
+// compared.
+type NetworkObject struct {
+	Start ip.Address
+	End ip.Address
 }
 
-type Contains interface {
-	Contains(NetworkObject) bool
+type NetworkUnpacker interface {
+	Unpack() ([]NetworkObject)
+}
+
+type Containser interface {
+	Contains(NetworkUnpacker) bool
 }

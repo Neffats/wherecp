@@ -59,16 +59,22 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 
 // Value returns the first and last address in the Network's Address range (network and broadcast).
 // Statisfies the NetworkObject interface.
-func (n *Network) Value() (start *ip.Address, end *ip.Address) {
+func (n *Network) Unpack() []NetworkObject {
 	// get inverse of the subnet mask
 	invMask := *n.Mask ^ addrMax
 
-	start = n.Address
+	start := *n.Address
 	// Or the network address with the inverse of the mask to get the last address in the subnet.
 	endAddr := *n.Address | invMask
-	end = &endAddr
+	end := endAddr
+	result := make([]NetworkObject, 0)
+	result = append(result,
+		NetworkObject{
+			Start: start,
+			End: end,
+		})
 
-	return
+	return result
 }
 
 // Match will return true if passed a network that has a matching address.
@@ -78,11 +84,14 @@ func (n *Network) Match(addr *Network) bool {
 
 // Contains takes a NetworkObject, returns true if the object's start and end Address
 // falls within the network Address range.
-func (n *Network) Contains(obj NetworkObject) bool {
-	compStart, compEnd := obj.Value()
-	thisStart, thisEnd := n.Value()
-	if *compStart >= *thisStart && *compEnd <= *thisEnd {
-		return true
+func (n *Network) Contains(obj NetworkUnpacker) bool {
+	compare := obj.Unpack()
+	this := n.Unpack()
+	self := this[0]
+	for _, c := range compare {
+		if c.Start < self.Start || c.End > self.End {
+			return false
+		}
 	}
-	return false
+	return true
 }

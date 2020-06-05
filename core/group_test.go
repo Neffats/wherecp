@@ -496,7 +496,7 @@ func TestGroupContains(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		input  NetworkObject
+		input  NetworkUnpacker
 		strict bool
 		want   bool
 		err    bool

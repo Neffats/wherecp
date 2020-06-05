@@ -32,10 +32,14 @@ func NewHost(name, addr, comment string) (*Host, error) {
 	}, nil
 }
 
-func (h *Host) Value() (start *ip.Address, end *ip.Address) {
-	start = h.Address
-	end = h.Address
-	return
+func (h *Host) Unpack() []NetworkObject {
+	result := make([]NetworkObject, 0)
+	result = append(result,
+		NetworkObject{
+			Start: *h.Address,
+			End: *h.Address,
+		})
+	return result
 }
 
 func (h *Host) Match(obj *Host) bool {
@@ -44,10 +48,12 @@ func (h *Host) Match(obj *Host) bool {
 
 // Contains will return true if addr matches the host's address.
 // Returns false if invalid IPv4 address - might be better to return an error?
-func (h *Host) Contains(obj NetworkObject) bool {
-	start, end := obj.Value()
-	if *start == *h.Address && *end == *h.Address {
-		return true
+func (h *Host) Contains(obj NetworkUnpacker) bool {
+	networks := obj.Unpack()
+	for _, n := range networks {
+		if n.Start != *h.Address || n.End != *h.Address {
+			return false
+		}
 	}
-	return false
+	return true
 }

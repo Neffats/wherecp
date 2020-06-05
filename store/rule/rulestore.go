@@ -3,6 +3,7 @@ package rulestore
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 	
 	"github.com/Neffats/wherecp/core"
@@ -50,7 +51,7 @@ func (rs *RuleStore) All() []*core.Rule {
 	return r
 }
 
-func (rs *RuleStore) Create(rule *core.Rule) error {
+func (rs *RuleStore) Insert(rule *core.Rule) error {
 	// Check whether the rule is already in the store.
 	existing, err := rs.Get(rule.UID)
 	if !errors.Is(err, ErrRuleNotFound) {
@@ -59,9 +60,19 @@ func (rs *RuleStore) Create(rule *core.Rule) error {
 	if existing != nil {
 		return fmt.Errorf("rule already in store")
 	}
+
+	i := sort.Search(len(rs.Rules), func(i int) bool {
+		return rule.Number > rs.Rules[i].Number
+	})
+
+	newRules := make([]*core.Rule, len(rs.Rules)+1)
+	copy(newRules[:i], rs.Rules[:i])
+	copy(newRules[i+1:], rs.Rules[i:])
+	newRules[i] = rule
+
 	rs.mux.Lock()
 	defer rs.mux.Unlock()
-	rs.Rules = append(rs.Rules, rule)
+	rs.Rules = newRules
 	return nil
 }
 

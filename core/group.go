@@ -150,11 +150,11 @@ func (g *Group) addNetwork(n *Network) {
 	// then by broadcast address (last address) second. Smallest networks will be in
 	// front of larger networks i.e. 192.168.0.0/25 will be before 192.168.0.0/24
 	i := sort.Search(len(g.Networks), func(i int) bool {
-		thisStart, thisEnd := g.Networks[i].Value()
-		otherStart, otherEnd := n.Value()
+		this := g.Networks[i].Unpack()
+		other := n.Unpack()
 
-		addr := *thisStart >= *otherStart
-		mask := *thisEnd >= *otherEnd
+		addr := this[0].Start >= other[0].Start
+		mask := this[0].End >= other[0].End
 		return addr && mask
 	})
 
@@ -174,11 +174,11 @@ func (g *Group) addRange(r *Range) {
 	// then by end address (last address) second. Smaller ranges will come before
 	// larger ranges i.e. 192.168.0.0-192.168.0.10 will be in front of 192.168.0.0-192.168.0.200
 	i := sort.Search(len(g.Ranges), func(i int) bool {
-		thisStart, thisEnd := g.Ranges[i].Value()
-		otherStart, otherEnd := r.Value()
+		this := g.Ranges[i].Unpack()
+		other := r.Unpack()
 
-		start := *thisStart >= *otherStart
-		end := *thisEnd >= *otherEnd
+		start := this[0].Start >= other[0].Start
+		end := this[0].End >= other[0].End
 		return start && end
 	})
 
@@ -261,10 +261,7 @@ func (g *Group) HasHost(h *Host) bool {
 	    i = 0
     } else {
 	    i = sort.Search(len(g.Hosts), func(i int) bool {
-		    keySt, keyEnd := h.Value()
-		    midSt, midEnd := g.Hosts[i].Value()
-
-		    return *keySt == *midSt && *keyEnd == *midEnd
+		    return h.Match(g.Hosts[i])
 	    })
     }
 
@@ -288,10 +285,7 @@ func (g *Group) HasNetwork(n *Network) bool {
 	    i = 0
     } else {
 	    i = sort.Search(len(g.Networks), func(i int) bool {
-		    keySt, keyEnd := n.Value()
-		    midSt, midEnd := g.Networks[i].Value()
-
-		    return *keySt == *midSt && *keyEnd == *midEnd
+		    return n.Match(g.Networks[i])
 	    })
     }
 
@@ -311,10 +305,7 @@ func (g *Group) HasRange(r *Range) bool {
 	    i = 0
     } else {
 	    i = sort.Search(len(g.Ranges), func(i int) bool {
-		    keySt, keyEnd := r.Value()
-		    midSt, midEnd := g.Ranges[i].Value()
-
-		    return *keySt == *midSt && *keyEnd == *midEnd
+		    return r.Match(g.Ranges[i])
 	    })
     }
 
@@ -353,36 +344,7 @@ func (g *Group) HasGroup(grp *Group) bool {
 	return g.Groups[i].Match(grp)
 }
 
-// this doesn't work because of the []NetworkObject, but keeping it in for now.
-func binarySearch(left, right int, list []NetworkObject, key NetworkObject) int {
-	if right >= left {
-		mid := left - (right-left)/2
-
-		keySt, keyEnd := key.Value()
-		midSt, midEnd := list[mid].Value()
-
-		if *keySt == *midSt {
-			if *keyEnd == *midEnd {
-				return mid
-			}
-			if *keyEnd > *midEnd {
-				return binarySearch(mid+1, right, list, key)
-			}
-			return binarySearch(left, mid-1, list, key)
-		}
-
-		if *keySt > *midSt {
-			return binarySearch(mid+1, right, list, key)
-		}
-
-		return binarySearch(left, mid-1, list, key)
-
-	}
-
-	return -1
-}
-
-func (g *Group) Contains(obj NetworkObject) bool {
+func (g *Group) Contains(obj NetworkUnpacker) bool {
 	for _, h := range g.Hosts {
 		if h.Contains(obj) {
 			return true

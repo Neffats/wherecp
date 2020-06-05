@@ -47,9 +47,9 @@ func TestAll(t *testing.T) {
 		t.Fatalf("failed to add http to svc: %v", err)
 	}
 
-	rule1 := core.NewRule(src, dst, svc, true, "")
-	rule2 := core.NewRule(dst, src, svc, true, "")
-	rule3 := core.NewRule(src, src, svc, false, "")
+	rule1 := core.NewRule(1, src, dst, svc, true, "")
+	rule2 := core.NewRule(2, dst, src, svc, true, "")
+	rule3 := core.NewRule(3, src, src, svc, false, "")
 
 	rules := make([]*core.Rule, 0)
 	rules = append(rules, rule1)
@@ -99,9 +99,9 @@ func TestGet(t *testing.T) {
 		t.Fatalf("failed to add http to svc: %v", err)
 	}
 
-	rule1 := core.NewRule(src, dst, svc, true, "")
-	rule2 := core.NewRule(dst, src, svc, true, "")
-	rule3 := core.NewRule(src, src, svc, false, "")
+	rule1 := core.NewRule(1, src, dst, svc, true, "")
+	rule2 := core.NewRule(2, dst, src, svc, true, "")
+	rule3 := core.NewRule(3, src, src, svc, false, "")
 
 	rules := make([]*core.Rule, 0)
 	rules = append(rules, rule1)
@@ -155,7 +155,7 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
+func TestInsert(t *testing.T) {
 	// Setup the test data.
 	host1, err := core.NewHost("host1", "192.168.1.1", "host1")
 	if err != nil {
@@ -187,9 +187,9 @@ func TestCreate(t *testing.T) {
 		t.Fatalf("failed to add http to svc: %v", err)
 	}
 
-	rule1 := core.NewRule(src, dst, svc, true, "")
-	rule2 := core.NewRule(dst, src, svc, true, "")
-	rule3 := core.NewRule(src, src, svc, false, "")
+	rule1 := core.NewRule(1, src, dst, svc, true, "")
+	rule2 := core.NewRule(2, dst, src, svc, true, "")
+	rule3 := core.NewRule(3, src, src, svc, false, "")
 
 	rules := make([]*core.Rule, 0)
 	rules = append(rules, rule3)
@@ -221,7 +221,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := testStore.Create(tc.input)
+			err := testStore.Insert(tc.input)
 			if err != nil {
 				// If we expected the error, then test successful.
 				if tc.err {
@@ -273,9 +273,9 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("failed to add http to svc: %v", err)
 	}
 
-	rule1 := core.NewRule(src, dst, svc, true, "")
-	rule2 := core.NewRule(dst, src, svc, true, "")
-	rule3 := core.NewRule(src, src, svc, false, "")
+	rule1 := core.NewRule(1, src, dst, svc, true, "")
+	rule2 := core.NewRule(2, dst, src, svc, true, "")
+	rule3 := core.NewRule(3, src, src, svc, false, "")
 
 	rules := make([]*core.Rule, 0)
 	rules = append(rules, rule1)

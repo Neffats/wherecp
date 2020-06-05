@@ -7,6 +7,7 @@ import (
 // Rule is a representation of a firewall rule.
 type Rule struct {
 	UID         string
+	Number      int
 	Source      *Group
 	Destination *Group
 	Port        *PortGroup
@@ -15,10 +16,11 @@ type Rule struct {
 }
 
 // NewRule returns a pointer to a new Rule object.
-func NewRule(src, dst *Group, prt *PortGroup, action bool, comment string) *Rule {
+func NewRule(number int, src, dst *Group, prt *PortGroup, action bool, comment string) *Rule {
 	uid := uuid.New()
 	return &Rule{
 		UID: uid.String(),
+		Number:      number,
 		Source:      src,
 		Destination: dst,
 		Port:        prt,

@@ -38,7 +38,7 @@ func TestParseHas(t *testing.T) {
 		t.Fatalf("failed to add http to svc: %v", err)
 	}
 
-	rule := core.NewRule(src, dst, svc, true, "")
+	rule := core.NewRule(1, src, dst, svc, true, "")
 
 	tests := []struct {
 		name  string

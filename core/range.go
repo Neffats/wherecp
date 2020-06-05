@@ -48,11 +48,14 @@ func NewRange(name, start, end, comment string) (*Range, error) {
 	return r, nil
 }
 
-func (r *Range) Value() (start *ip.Address, end *ip.Address) {
-	start = r.StartAddress
-	end = r.EndAddress
-
-	return
+func (r *Range) Unpack() []NetworkObject {
+	result := make([]NetworkObject, 0)
+	result = append(result,
+		NetworkObject{
+			Start: *r.StartAddress,
+			End: *r.EndAddress,
+		})
+	return result
 }
 
 // Match will return true if the passed in range object's address matches.
@@ -61,9 +64,14 @@ func (r *Range) Match(addr *Range) bool {
 }
 
 // Contains will return true if obj is contained by the range.
-func (r *Range) Contains(obj NetworkObject) bool {
-	otherStart, otherEnd := obj.Value()
-	return *r.StartAddress <= *otherStart && *r.EndAddress >= *otherEnd
+func (r *Range) Contains(obj NetworkUnpacker) bool {
+	compare := obj.Unpack()
+	for _, c := range compare {
+		if c.Start < *r.StartAddress || c.End > *r.EndAddress {
+			return false
+		}
+	}
+	return true
 }
 
 // Checks if the format of the range string is valid.

@@ -7,7 +7,7 @@ import (
 type RuleStorer interface {
 	// Return every rule.
 	All() []*core.Rule
-	Create(rule *core.Rule) error
+	Insert(rule *core.Rule) error
 	// Return a rule object from it's uid.
 	Get(uid string) (*core.Rule, error)
 	// Update a rule object.
@@ -19,7 +19,7 @@ type RuleStorer interface {
 type HostStorer interface {
 	// Return every rule.
 	All() []*core.Host
-	Create(hst *core.Host) error
+	Insert(hst *core.Host) error
 	// Return a host object from it's uid.
 	Get(uid string) (*core.Host, error)
 	// Update a host object.
@@ -33,7 +33,7 @@ type HostStorer interface {
 type NetworkStorer interface {
 	// Return every rule.
 	All() []*core.Network
-	Create(net *core.Network) error
+	Insert(net *core.Network) error
 	// Return a network object from it's uid.
 	Get(uid string) (*core.Network, error)
 	// Update a network object.
@@ -63,7 +63,7 @@ type RangeStorer interface {
 type GroupStorer interface {
 	// Return every rule.
 	All() []*core.Group
-	Create(grp *core.Group) error
+	Insert(grp *core.Group) error
 	// Return a group object from it's uid.
 	Get(uid string) (*core.Group, error)
 	// Update a group object.

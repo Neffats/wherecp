@@ -42,12 +42,14 @@ func (rs *RuleStore) Init() error {
 }
 
 // All return all of the rules in the store. 
-func (rs *RuleStore) All() []*core.Rule {
+func (rs *RuleStore) All() []core.Rule {
 	rs.mux.RLock()
 	defer rs.mux.RUnlock()
 	// Create a new copy of rules to stop accidental modification.
-	r := make([]*core.Rule, len(rs.Rules))
-	copy(r, rs.Rules)
+	r := make([]core.Rule, 0)
+	for _, rule := range rs.Rules {
+		r = append(r, *rule)
+	}
 	return r
 }
 
@@ -57,8 +59,10 @@ func (rs *RuleStore) Insert(rule *core.Rule) error {
 	if !errors.Is(err, ErrRuleNotFound) {
 		return fmt.Errorf("failed to determine whether rule is already present: %v", err)
 	}
-	if existing != nil {
-		return fmt.Errorf("rule already in store")
+
+	// If the rule we got isn't empty then it already exists in the store.
+	if (core.Rule{}) != existing {
+		return fmt.Errorf("rule is already in store")
 	}
 
 	i := sort.Search(len(rs.Rules), func(i int) bool {
@@ -76,16 +80,16 @@ func (rs *RuleStore) Insert(rule *core.Rule) error {
 	return nil
 }
 
-func (rs *RuleStore) Get(uid string) (*core.Rule, error) {
+func (rs *RuleStore) Get(uid string) (core.Rule, error) {
 	// TODO: Make this more efficient.
 	rs.mux.RLock()
 	defer rs.mux.RUnlock()
 	for _, r := range rs.Rules {
 		if r.UID == uid {
-			return r, nil
+			return *r, nil
 		}
 	}
-	return nil, ErrRuleNotFound 
+	return core.Rule{}, ErrRuleNotFound 
 }
 
 func (rs *RuleStore) Update(uid string, updated *core.Rule) error {

@@ -6,10 +6,10 @@ import (
 
 type RuleStorer interface {
 	// Return every rule.
-	All() []*core.Rule
-	Insert(rule *core.Rule) error
+	All() []core.Rule
+	Insert(rule core.Rule) error
 	// Return a rule object from it's uid.
-	Get(uid string) (*core.Rule, error)
+	Get(uid string) (core.Rule, error)
 	// Update a rule object.
 	Update(uid string, core.Rule) error
 	// Delete a rule object from the store.

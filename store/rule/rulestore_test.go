@@ -62,8 +62,15 @@ func TestAll(t *testing.T) {
 	}
 
 	got := testStore.All()
-	if diff := cmp.Diff(got, rules); diff != "" {
-		t.Errorf("All() mismatch (-want +got):\n%s", diff)
+	if len(got) != len(rules) {
+		diff := cmp.Diff(got, rules)
+		t.Errorf("length of expected rules doesn't match rules we got, wanted length: %d, length gotten: %d\nAll() mismatch (-want +got):\n%s", len(rules), len(got), diff)
+		return
+	}
+	for i := 0; i < len(rules); i++ {
+		if diff := cmp.Diff(got[i], *rules[i]); diff != "" {
+			t.Errorf("All() mismatch (-want +got):\n%s", diff)
+		}
 	}
 }
 
@@ -147,7 +154,7 @@ func TestGet(t *testing.T) {
 				}
 				t.Errorf("get error when not expected: %v", err)
 			}
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(*tc.want, got); diff != "" {
 				t.Errorf("All() mismatch (-want +got):\n%s", diff)
 			}
 			
@@ -233,7 +240,7 @@ func TestInsert(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to get rule: %v", err)
 			}
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(*tc.want, got); diff != "" {
 				t.Errorf("All() mismatch (-want +got):\n%s", diff)
 			}
 			

@@ -3,12 +3,12 @@ package core
 import "fmt"
 
 type PortRange struct {
-	UID      int
-	Name     string
-	Start    uint
-	End      uint
-	Protocol int
-	Comment  string
+	uid      int
+	name     string
+	start    uint
+	end      uint
+	protocol int
+	comment  string
 }
 
 func NewPortRange(name string, start, end uint, protocol, comment string) (*PortRange, error) {
@@ -17,26 +17,26 @@ func NewPortRange(name string, start, end uint, protocol, comment string) (*Port
 		return nil, fmt.Errorf("failed to create new Port object because invalid protocol provided: %s", protocol)
 	}
 	return &PortRange{
-		Name:     name,
-		Start:    start,
-		End:      end,
-		Protocol: protoEnum,
-		Comment:  comment,
+		name:     name,
+		start:    start,
+		end:      end,
+		protocol: protoEnum,
+		comment:  comment,
 	}, nil
 }
 
 func (pr *PortRange) Value() (start uint, end uint, proto int) {
-	start = pr.Start
-	end = pr.End
-	proto = pr.Protocol
+	start = pr.start
+	end = pr.end
+	proto = pr.protocol
 	return
 }
 
 func (pr *PortRange) Match(other *PortRange) bool {
-	return other.Start == pr.Start && other.End == pr.End && other.Protocol == pr.Protocol
+	return other.start == pr.start && other.end == pr.end && other.protocol == pr.protocol
 }
 
 func (pr *PortRange) Contains(obj PortObject) bool {
 	otherStart, otherEnd, otherProto := obj.Value()
-	return pr.Start <= otherStart && pr.End >= otherEnd && otherProto == pr.Protocol
+	return pr.start <= otherStart && pr.end >= otherEnd && otherProto == pr.protocol
 }

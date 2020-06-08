@@ -14,11 +14,11 @@ func TestNewRange(t *testing.T) {
 	end := ip.Address(3232236030)
 	uid := uuid.New()
 	testRange := &Range{
-		UID:          uid.String(),
-		Name:         "testRange",
-		StartAddress: &start,
-		EndAddress:   &end,
-		Comment:      "test range object",
+		uid:          uid.String(),
+		name:         "testRange",
+		startAddress: &start,
+		endAddress:   &end,
+		comment:      "test range object",
 	}
 	tests := []struct {
 		name  string
@@ -39,16 +39,16 @@ func TestNewRange(t *testing.T) {
 				}
 				t.Fatalf("failed to create test range object: %v", err)
 			}
-			if !reflect.DeepEqual(testRange.Name, got.Name) {
+			if !reflect.DeepEqual(testRange.name, got.name) {
 				t.Fatalf("Name of created range didn't match.")
 			}
-			if !reflect.DeepEqual(testRange.StartAddress, got.StartAddress) {
+			if !reflect.DeepEqual(testRange.startAddress, got.startAddress) {
 				t.Fatalf("start address of created range didn't match.")
 			}
-			if !reflect.DeepEqual(testRange.EndAddress, got.EndAddress) {
+			if !reflect.DeepEqual(testRange.endAddress, got.endAddress) {
 				t.Fatalf("end address of created range didn't match.")
 			}
-			if !reflect.DeepEqual(testRange.Comment, got.Comment) {
+			if !reflect.DeepEqual(testRange.comment, got.comment) {
 				t.Fatalf("comment of created range didn't match.")
 			}
 		})

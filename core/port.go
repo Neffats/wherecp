@@ -37,11 +37,11 @@ func Proto2String(protocol int) string {
 }
 
 type Port struct {
-	UID      string
-	Name     string
-	Number   uint
-	Protocol int
-	Comment  string
+	uid      string
+	name     string
+	number   uint
+	protocol int
+	comment  string
 }
 
 func NewPort(name string, number uint, protocol, comment string) (*Port, error) {
@@ -51,26 +51,26 @@ func NewPort(name string, number uint, protocol, comment string) (*Port, error) 
 	}
 	uid := uuid.New()
 	return &Port{
-		UID: uid.String(),
-		Name:     name,
-		Number:   number,
-		Protocol: protoEnum,
-		Comment:  comment,
+		uid: uid.String(),
+		name:     name,
+		number:   number,
+		protocol: protoEnum,
+		comment:  comment,
 	}, nil
 }
 
 func (p *Port) Value() (start uint, end uint, proto int) {
-	start = p.Number
-	end = p.Number
-	proto = p.Protocol
+	start = p.number
+	end = p.number
+	proto = p.protocol
 	return
 }
 
 func (p *Port) Match(prt *Port) bool {
-	return prt.Number == p.Number && prt.Protocol == p.Protocol
+	return prt.number == p.number && prt.protocol == p.protocol
 }
 
 func (p *Port) Contains(obj PortObject) bool {
 	otherStart, otherEnd, otherProto := obj.Value()
-	return otherStart == p.Number && otherEnd == p.Number && otherProto == p.Protocol
+	return otherStart == p.number && otherEnd == p.number && otherProto == p.protocol
 }

@@ -131,7 +131,7 @@ func (g *Group) Add(obj interface{}) error {
 func (g *Group) addHost(h *Host) {
 	// Ordered smallest to largets by Address.
 	i := sort.Search(len(g.hosts), func(i int) bool {
-		return *g.hosts[i].Address > *h.Address
+		return *g.hosts[i].address > *h.address
 	})
 
 	// TODO: Is there a nicer way of doing this?

@@ -20,11 +20,11 @@ const (
 // Network represents an IPv4 subnet.
 // Used by firewalls to allow whole networks access to a resource.
 type Network struct {
-	UID     string
-	Name    string
-	Address *ip.Address
-	Mask    *ip.Address
-	Comment string
+	uid     string
+	name    string
+	address *ip.Address
+	mask    *ip.Address
+	comment string
 }
 
 // NewNetwork returns a ptr to a new Network object.
@@ -48,11 +48,11 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 		return nil, fmt.Errorf("address not the network address for supplied subnet: %s/%s", addr, mask)
 	}
 	uid := uuid.New()
-	network.UID = uid.String()
-	network.Name = name
-	network.Address = netAddr
-	network.Mask = netMask
-	network.Comment = comment
+	network.uid = uid.String()
+	network.name = name
+	network.address = netAddr
+	network.mask = netMask
+	network.comment = comment
 
 	return network, nil
 }
@@ -61,11 +61,11 @@ func NewNetwork(name, addr, mask, comment string) (*Network, error) {
 // Statisfies the NetworkObject interface.
 func (n *Network) Unpack() []NetworkObject {
 	// get inverse of the subnet mask
-	invMask := *n.Mask ^ addrMax
+	invMask := *n.mask ^ addrMax
 
-	start := *n.Address
+	start := *n.address
 	// Or the network address with the inverse of the mask to get the last address in the subnet.
-	endAddr := *n.Address | invMask
+	endAddr := *n.address | invMask
 	end := endAddr
 	result := make([]NetworkObject, 0)
 	result = append(result,
@@ -79,7 +79,7 @@ func (n *Network) Unpack() []NetworkObject {
 
 // Match will return true if passed a network that has a matching address.
 func (n *Network) Match(addr *Network) bool {
-	return *n.Address == *addr.Address && *n.Mask == *addr.Mask
+	return *n.address == *addr.address && *n.mask == *addr.mask
 }
 
 // Contains takes a NetworkObject, returns true if the object's start and end Address

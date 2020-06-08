@@ -10,10 +10,10 @@ import (
 // Host represents a single IPv4 host object, a single IPv4 address.
 // Used by firewalls to allow single hosts access to a resource.
 type Host struct {
-	UID     string
-	Name    string
-	Address *ip.Address
-	Comment string
+	uid     string
+	name    string
+	address *ip.Address
+	comment string
 }
 
 // NewHost will return a pointer to a new host object.
@@ -25,10 +25,10 @@ func NewHost(name, addr, comment string) (*Host, error) {
 	}
 	uid := uuid.New()
 	return &Host{
-		UID:     uid.String(),
-		Name:    name,
-		Address: address,
-		Comment: comment,
+		uid:     uid.String(),
+		name:    name,
+		address: address,
+		comment: comment,
 	}, nil
 }
 
@@ -36,14 +36,14 @@ func (h *Host) Unpack() []NetworkObject {
 	result := make([]NetworkObject, 0)
 	result = append(result,
 		NetworkObject{
-			Start: *h.Address,
-			End: *h.Address,
+			Start: *h.address,
+			End: *h.address,
 		})
 	return result
 }
 
 func (h *Host) Match(obj *Host) bool {
-	return *h.Address == *obj.Address
+	return *h.address == *obj.address
 }
 
 // Contains will return true if addr matches the host's address.
@@ -51,7 +51,7 @@ func (h *Host) Match(obj *Host) bool {
 func (h *Host) Contains(obj NetworkUnpacker) bool {
 	networks := obj.Unpack()
 	for _, n := range networks {
-		if n.Start != *h.Address || n.End != *h.Address {
+		if n.Start != *h.address || n.End != *h.address {
 			return false
 		}
 	}

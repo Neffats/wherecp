@@ -12,11 +12,11 @@ import (
 // Range represents a range of IPv4 addresses.
 // The start address must be smaller than the end address.
 type Range struct {
-	UID          string
-	Name         string
-	StartAddress *ip.Address
-	EndAddress   *ip.Address
-	Comment      string
+	uid          string
+	name         string
+	startAddress *ip.Address
+	endAddress   *ip.Address
+	comment      string
 }
 
 // NewRange returns a pointer to a range object.
@@ -39,11 +39,11 @@ func NewRange(name, start, end, comment string) (*Range, error) {
 		return r, fmt.Errorf("range start address must be less than the end address: %s-%s", start, end)
 	}
 	uid := uuid.New()
-	r.UID = uid.String()
-	r.Name = name
-	r.StartAddress = rangeStart
-	r.EndAddress = rangeEnd
-	r.Comment = comment
+	r.uid = uid.String()
+	r.name = name
+	r.startAddress = rangeStart
+	r.endAddress = rangeEnd
+	r.comment = comment
 
 	return r, nil
 }
@@ -52,22 +52,22 @@ func (r *Range) Unpack() []NetworkObject {
 	result := make([]NetworkObject, 0)
 	result = append(result,
 		NetworkObject{
-			Start: *r.StartAddress,
-			End: *r.EndAddress,
+			Start: *r.startAddress,
+			End: *r.endAddress,
 		})
 	return result
 }
 
 // Match will return true if the passed in range object's address matches.
 func (r *Range) Match(addr *Range) bool {
-	return *r.StartAddress == *addr.StartAddress && *r.EndAddress == *addr.EndAddress
+	return *r.startAddress == *addr.startAddress && *r.endAddress == *addr.endAddress
 }
 
 // Contains will return true if obj is contained by the range.
 func (r *Range) Contains(obj NetworkUnpacker) bool {
 	compare := obj.Unpack()
 	for _, c := range compare {
-		if c.Start < *r.StartAddress || c.End > *r.EndAddress {
+		if c.Start < *r.startAddress || c.End > *r.endAddress {
 			return false
 		}
 	}

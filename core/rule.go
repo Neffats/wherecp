@@ -6,26 +6,26 @@ import (
 
 // Rule is a representation of a firewall rule.
 type Rule struct {
-	UID         string
-	Number      int
-	Source      *Group
-	Destination *Group
-	Port        *PortGroup
-	Action      bool
-	Comment     string
+	uid         string
+	number      int
+	source      *Group
+	destination *Group
+	port        *PortGroup
+	action      bool
+	comment     string
 }
 
 // NewRule returns a pointer to a new Rule object.
 func NewRule(number int, src, dst *Group, prt *PortGroup, action bool, comment string) *Rule {
 	uid := uuid.New()
 	return &Rule{
-		UID: uid.String(),
-		Number:      number,
-		Source:      src,
-		Destination: dst,
-		Port:        prt,
-		Action:      action,
-		Comment:     comment,
+		uid: uid.String(),
+		number:      number,
+		source:      src,
+		destination: dst,
+		port:        prt,
+		action:      action,
+		comment:     comment,
 	}
 }
 
@@ -35,13 +35,13 @@ type Haser interface {
 
 func HasInSource() func(*Rule) Haser {
 	return func(r *Rule) Haser {
-		return r.Source
+		return r.source
 	}
 }
 
 func HasInDestination() func(*Rule) Haser {
 	return func(r *Rule) Haser {
-		return r.Destination
+		return r.destination
 	}
 }
 
@@ -54,13 +54,13 @@ func merge(name string, g1, g2 *Group) *Group {
 
 func HasInAny() func(*Rule) Haser {
 	return func(r *Rule) Haser {
-		return merge("Any", r.Source, r.Destination)
+		return merge("Any", r.source, r.destination)
 	}
 }
 
 func HasInService() func(*Rule) Haser {
 	return func(r *Rule) Haser {
-		return r.Port
+		return r.port
 	}
 }
 
@@ -70,12 +70,12 @@ type NetContainser interface {
 
 func ContainsInSource() func(*Rule) Haser {
 	return func(r *Rule) Haser {
-		return r.Source
+		return r.source
 	}
 }
 
 func ContainsInDestination() func(*Rule) Haser {
 	return func(r *Rule) Haser {
-		return r.Destination
+		return r.destination
 	}
 }

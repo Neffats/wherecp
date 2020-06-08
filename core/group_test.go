@@ -23,7 +23,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testHost, testGroup.Hosts[0]) {
+		if !reflect.DeepEqual(testHost, testGroup.hosts[0]) {
 			t.Fatalf("host objects don't match")
 		}
 	})
@@ -40,7 +40,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testHost, testGroup.Hosts[1]) {
+		if !reflect.DeepEqual(testHost, testGroup.hosts[1]) {
 			t.Fatalf("host objects don't match")
 		}
 	})
@@ -58,7 +58,7 @@ func TestAdd(t *testing.T) {
 		}
 
 		// Since list is sorted, this host should be at the start.
-		if !reflect.DeepEqual(testHost, testGroup.Hosts[0]) {
+		if !reflect.DeepEqual(testHost, testGroup.hosts[0]) {
 			t.Fatalf("host objects don't match")
 		}
 	})
@@ -75,7 +75,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testNetwork, testGroup.Networks[0]) {
+		if !reflect.DeepEqual(testNetwork, testGroup.networks[0]) {
 			t.Fatalf("network objects don't match")
 		}
 	})
@@ -92,7 +92,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testNetwork, testGroup.Networks[1]) {
+		if !reflect.DeepEqual(testNetwork, testGroup.networks[1]) {
 			t.Fatalf("network objects don't match")
 		}
 	})
@@ -109,7 +109,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testNetwork, testGroup.Networks[0]) {
+		if !reflect.DeepEqual(testNetwork, testGroup.networks[0]) {
 			t.Fatalf("network objects don't match")
 		}
 	})
@@ -126,7 +126,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testNetwork, testGroup.Networks[0]) {
+		if !reflect.DeepEqual(testNetwork, testGroup.networks[0]) {
 			t.Fatalf("network objects don't match")
 		}
 	})
@@ -143,7 +143,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testRange, testGroup.Ranges[0]) {
+		if !reflect.DeepEqual(testRange, testGroup.ranges[0]) {
 			t.Fatalf("range objects don't match")
 		}
 	})
@@ -160,7 +160,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testRange, testGroup.Ranges[1]) {
+		if !reflect.DeepEqual(testRange, testGroup.ranges[1]) {
 			t.Fatalf("range objects don't match")
 		}
 	})
@@ -177,7 +177,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testRange, testGroup.Ranges[0]) {
+		if !reflect.DeepEqual(testRange, testGroup.ranges[0]) {
 			t.Fatalf("range objects don't match")
 		}
 	})
@@ -194,7 +194,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testRange, testGroup.Ranges[3]) {
+		if !reflect.DeepEqual(testRange, testGroup.ranges[3]) {
 			t.Fatalf("range objects don't match")
 		}
 	})
@@ -211,7 +211,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testRange, testGroup.Ranges[1]) {
+		if !reflect.DeepEqual(testRange, testGroup.ranges[1]) {
 			t.Fatalf("range objects don't match")
 		}
 	})
@@ -225,7 +225,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testAddGroup, testGroup.Groups[0]) {
+		if !reflect.DeepEqual(testAddGroup, testGroup.groups[0]) {
 			t.Fatalf("group objects don't match")
 		}
 	})
@@ -239,7 +239,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testAddGroup, testGroup.Groups[1]) {
+		if !reflect.DeepEqual(testAddGroup, testGroup.groups[1]) {
 			t.Fatalf("group objects don't match")
 		}
 	})
@@ -253,7 +253,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("got error when not expected: %v", err)
 		}
 
-		if !reflect.DeepEqual(testAddGroup, testGroup.Groups[0]) {
+		if !reflect.DeepEqual(testAddGroup, testGroup.groups[0]) {
 			t.Fatalf("group objects don't match")
 		}
 	})

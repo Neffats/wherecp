@@ -16,32 +16,32 @@ const defaultGroupCapacity = 100
 // The Network objects are ordered by Address, and the Groups
 // are ordered by name.
 type Group struct {
-	UID      string
-	Name     string
-	Hosts    []*Host
-	Networks []*Network
-	Ranges   []*Range
-	Groups   []*Group
-	Comment  string
+	uid      string
+	name     string
+	hosts    []*Host
+	networks []*Network
+	ranges   []*Range
+	groups   []*Group
+	comment  string
 }
 
 // NewGroup returns a new empty group.
 func NewGroup(name, comment string) *Group {
 	uid := uuid.New()
 	return &Group{
-		UID:      uid.String(),
-		Name:     name,
-		Hosts:    make([]*Host, 0),
-		Networks: make([]*Network, 0),
-		Ranges:   make([]*Range, 0),
-		Groups:   make([]*Group, 0),
-		Comment:  comment,
+		uid:      uid.String(),
+		name:     name,
+		hosts:    make([]*Host, 0),
+		networks: make([]*Network, 0),
+		ranges:   make([]*Range, 0),
+		groups:   make([]*Group, 0),
+		comment:  comment,
 	}
 }
 
 // Match will return true if the two groups are identical.
 func (g *Group) Match(grp *Group) bool {
-	if grp.Name == g.Name && g.MatchContent(grp) {
+	if grp.name == g.name && g.MatchContent(grp) {
 		return true
 	}
 	return false
@@ -51,16 +51,16 @@ func (g *Group) Match(grp *Group) bool {
 func (g *Group) MatchContent(grp *Group) bool {
 	// Check if the lengths of the groups match.
 	// If they don't then the two groups must be different.
-	if len(g.Hosts) != len(grp.Hosts) {
+	if len(g.hosts) != len(grp.hosts) {
 		return false
 	}
-	if len(g.Networks) != len(grp.Networks) {
+	if len(g.networks) != len(grp.networks) {
 		return false
 	}
-	if len(g.Ranges) != len(grp.Ranges) {
+	if len(g.ranges) != len(grp.ranges) {
 		return false
 	}
-	if len(g.Groups) != len(grp.Groups) {
+	if len(g.groups) != len(grp.groups) {
 		return false
 	}
 
@@ -68,32 +68,32 @@ func (g *Group) MatchContent(grp *Group) bool {
 
 	// Compare Hosts of groups.
 	// All group members are sorted, so all members should be in the same location.
-	for i := 0; i < len(g.Hosts); i++ {
-		match = g.Hosts[i].Match(grp.Hosts[i])
+	for i := 0; i < len(g.hosts); i++ {
+		match = g.hosts[i].Match(grp.hosts[i])
 		if !match {
 			return false
 		}
 	}
 
 	// Compare Networks of groups.
-	for i := 0; i < len(g.Networks); i++ {
-		match = g.Networks[i].Match(grp.Networks[i])
+	for i := 0; i < len(g.networks); i++ {
+		match = g.networks[i].Match(grp.networks[i])
 		if !match {
 			return false
 		}
 	}
 
 	// Compare Ranges of groups.
-	for i := 0; i < len(g.Ranges); i++ {
-		match = g.Ranges[i].Match(grp.Ranges[i])
+	for i := 0; i < len(g.ranges); i++ {
+		match = g.ranges[i].Match(grp.ranges[i])
 		if !match {
 			return false
 		}
 	}
 
 	// Compare Groups of groups.
-	for i := 0; i < len(g.Groups); i++ {
-		match = g.Groups[i].Match(grp.Groups[i])
+	for i := 0; i < len(g.groups); i++ {
+		match = g.groups[i].Match(grp.groups[i])
 		if !match {
 			return false
 		}
@@ -130,27 +130,27 @@ func (g *Group) Add(obj interface{}) error {
 
 func (g *Group) addHost(h *Host) {
 	// Ordered smallest to largets by Address.
-	i := sort.Search(len(g.Hosts), func(i int) bool {
-		return *g.Hosts[i].Address > *h.Address
+	i := sort.Search(len(g.hosts), func(i int) bool {
+		return *g.hosts[i].Address > *h.Address
 	})
 
 	// TODO: Is there a nicer way of doing this?
 	// Create a new bigger slice.
-	newHosts := make([]*Host, len(g.Hosts)+1)
+	newHosts := make([]*Host, len(g.hosts)+1)
 	// Shift the slice forward by one at the insert location.
-	copy(newHosts[:i], g.Hosts[:i])
-	copy(newHosts[i+1:], g.Hosts[i:])
+	copy(newHosts[:i], g.hosts[:i])
+	copy(newHosts[i+1:], g.hosts[i:])
 	// Append host at the insert location.
 	newHosts[i] = h
-	g.Hosts = newHosts
+	g.hosts = newHosts
 }
 
 func (g *Group) addNetwork(n *Network) {
 	// Ordered smallest to largest by network address (first address) first
 	// then by broadcast address (last address) second. Smallest networks will be in
 	// front of larger networks i.e. 192.168.0.0/25 will be before 192.168.0.0/24
-	i := sort.Search(len(g.Networks), func(i int) bool {
-		this := g.Networks[i].Unpack()
+	i := sort.Search(len(g.networks), func(i int) bool {
+		this := g.networks[i].Unpack()
 		other := n.Unpack()
 
 		addr := this[0].Start >= other[0].Start
@@ -160,21 +160,21 @@ func (g *Group) addNetwork(n *Network) {
 
 	// TODO: Is there a nicer way of doing this?
 	// Create a new bigger slice.
-	newNets := make([]*Network, len(g.Networks)+1)
+	newNets := make([]*Network, len(g.networks)+1)
 	// Shift the slice forward by one at the insert location.
-	copy(newNets[:i], g.Networks[:i])
-	copy(newNets[i+1:], g.Networks[i:])
+	copy(newNets[:i], g.networks[:i])
+	copy(newNets[i+1:], g.networks[i:])
 	// Append network at the insert location.
 	newNets[i] = n
-	g.Networks = newNets
+	g.networks = newNets
 }
 
 func (g *Group) addRange(r *Range) {
 	// Ordered smallest to largest by start address (first address) first
 	// then by end address (last address) second. Smaller ranges will come before
 	// larger ranges i.e. 192.168.0.0-192.168.0.10 will be in front of 192.168.0.0-192.168.0.200
-	i := sort.Search(len(g.Ranges), func(i int) bool {
-		this := g.Ranges[i].Unpack()
+	i := sort.Search(len(g.ranges), func(i int) bool {
+		this := g.ranges[i].Unpack()
 		other := r.Unpack()
 
 		start := this[0].Start >= other[0].Start
@@ -184,30 +184,30 @@ func (g *Group) addRange(r *Range) {
 
 	// TODO: Is there a nicer way of doing this?
 	// Create a new bigger slice.
-	newRange := make([]*Range, len(g.Ranges)+1)
+	newRange := make([]*Range, len(g.ranges)+1)
 	// Shift the slice forward by one at the insert location.
-	copy(newRange[:i], g.Ranges[:i])
-	copy(newRange[i+1:], g.Ranges[i:])
+	copy(newRange[:i], g.ranges[:i])
+	copy(newRange[i+1:], g.ranges[i:])
 	// Append network at the insert location.
 	newRange[i] = r
-	g.Ranges = newRange
+	g.ranges = newRange
 }
 
 func (g *Group) addGroup(grp *Group) {
 	// Ordered alphabetically by Group name.
-	i := sort.Search(len(g.Groups), func(i int) bool {
-		return g.Groups[i].Name >= grp.Name
+	i := sort.Search(len(g.groups), func(i int) bool {
+		return g.groups[i].name >= grp.name
 	})
 
 	// TODO: Is there a nicer way of doing this?
 	// Create a new bigger slice.
-	newGroup := make([]*Group, len(g.Groups)+1)
+	newGroup := make([]*Group, len(g.groups)+1)
 	// Shift the slice forward by one at the insert location.
-	copy(newGroup[:i], g.Groups[:i])
-	copy(newGroup[i+1:], g.Groups[i:])
+	copy(newGroup[:i], g.groups[:i])
+	copy(newGroup[i+1:], g.groups[i:])
 	// Append group at the insert location.
 	newGroup[i] = grp
-	g.Groups = newGroup
+	g.groups = newGroup
 }
 
 // HasObject returns true if the group has a members object whose type and address matches the supplied object.
@@ -239,7 +239,7 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 	}
 
 	// Check if any of it's group members contain the object.
-	for _, grp := range g.Groups {
+	for _, grp := range g.groups {
 		has, err := grp.HasObject(obj)
 		if err != nil {
 			return false, err
@@ -252,115 +252,115 @@ func (g *Group) HasObject(obj interface{}) (bool, error) {
 }
 
 func (g *Group) HasHost(h *Host) bool {
-	if len(g.Hosts) < 1 {
+	if len(g.hosts) < 1 {
 	    return false
     }
     var i int
     // Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
-    if len(g.Hosts) == 1 {
+    if len(g.hosts) == 1 {
 	    i = 0
     } else {
-	    i = sort.Search(len(g.Hosts), func(i int) bool {
-		    return h.Match(g.Hosts[i])
+	    i = sort.Search(len(g.hosts), func(i int) bool {
+		    return h.Match(g.hosts[i])
 	    })
     }
 
     // Check that what we go makes sense.
-    if i == -1 || i >= len(g.Hosts) {
+    if i == -1 || i >= len(g.hosts) {
 	    return false
     }
 
     // Double check that objects match.
-    return g.Hosts[i].Match(h)
+    return g.hosts[i].Match(h)
 }
 
 func (g *Group) HasNetwork(n *Network) bool {
-	if len(g.Networks) < 1 {
+	if len(g.networks) < 1 {
 		return false
 	}
 
 	var i int
     // Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
-    if len(g.Networks) == 1 {
+    if len(g.networks) == 1 {
 	    i = 0
     } else {
-	    i = sort.Search(len(g.Networks), func(i int) bool {
-		    return n.Match(g.Networks[i])
+	    i = sort.Search(len(g.networks), func(i int) bool {
+		    return n.Match(g.networks[i])
 	    })
     }
 
     // Check that what we go makes sense.
-    if i == -1 || i >= len(g.Networks) {
+    if i == -1 || i >= len(g.networks) {
 	    return false
     }
 
     // Double check that objects match.
-    return g.Networks[i].Match(n)
+    return g.networks[i].Match(n)
 }
 
 func (g *Group) HasRange(r *Range) bool {
     var i int
     // Edge case handling. When len() == 0, sort.Search() was returning an index of 1 which is oob.
-    if len(g.Ranges) == 1 {
+    if len(g.ranges) == 1 {
 	    i = 0
     } else {
-	    i = sort.Search(len(g.Ranges), func(i int) bool {
-		    return r.Match(g.Ranges[i])
+	    i = sort.Search(len(g.ranges), func(i int) bool {
+		    return r.Match(g.ranges[i])
 	    })
     }
 
     // Check that what we go makes sense.
-    if i == -1 || i >= len(g.Ranges) {
+    if i == -1 || i >= len(g.ranges) {
 	    return false
     }
 
     // Double check that objects match.
-    return g.Ranges[i].Match(r)
+    return g.ranges[i].Match(r)
 
 
 }
 
 func (g *Group) HasGroup(grp *Group) bool {
-	if len(g.Groups) < 1 {
+	if len(g.groups) < 1 {
 		return false
 	}
 
 	var i int
 	// Edge case handling. When len() == 0, sort.Search() was return index of 1 with is oob.
-	if len(g.Groups) == 1 {
+	if len(g.groups) == 1 {
 		i = 0
 	} else {
-		i = sort.Search(len(g.Groups), func(i int) bool {
-			return g.Groups[i].Name == grp.Name
+		i = sort.Search(len(g.groups), func(i int) bool {
+			return g.groups[i].name == grp.name
 		})
 	}
 
 	// Check that what we go makes sense.
-	if i == -1 || i >= len(g.Groups) {
+	if i == -1 || i >= len(g.groups) {
 		return false
 	}
 
 	// Double check that objects match.
-	return g.Groups[i].Match(grp)
+	return g.groups[i].Match(grp)
 }
 
 func (g *Group) Contains(obj NetworkUnpacker) bool {
-	for _, h := range g.Hosts {
+	for _, h := range g.hosts {
 		if h.Contains(obj) {
 			return true
 		}
 	}
-	for _, n := range g.Networks {
+	for _, n := range g.networks {
 		if n.Contains(obj) {
 			return true
 		}
 	}
-	for _, r := range g.Ranges {
+	for _, r := range g.ranges {
 		if r.Contains(obj) {
 			return true
 		}
 	}
-	for _, grp := range g.Groups {
+	for _, grp := range g.groups {
 		if grp.Contains(obj) {
 			return true
 		}

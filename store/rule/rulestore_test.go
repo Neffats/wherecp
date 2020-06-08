@@ -67,8 +67,8 @@ func TestAll(t *testing.T) {
 		return
 	}
 	for i := 0; i < len(rules); i++ {
-		if diff := reflect.DeepEqual(got[i], *rules[i]); !diff {
-			t.Errorf("expected: %+v\ngot:%+v", got[i], *rules[i])
+		if diff := reflect.DeepEqual(got[i], rules[i]); !diff {
+			t.Errorf("expected: %+v\ngot:%+v", got[i], rules[i])
 		}
 	}
 }
@@ -153,8 +153,8 @@ func TestGet(t *testing.T) {
 				}
 				t.Errorf("get error when not expected: %v", err)
 			}
-			if diff := reflect.DeepEqual(*tc.want, got); !diff {
-				t.Errorf("want: %+v\ngot: %+v", *tc.want, got)
+			if diff := reflect.DeepEqual(tc.want, got); !diff {
+				t.Errorf("want: %+v\ngot: %+v", tc.want, got)
 			}
 			
 		})
@@ -239,8 +239,8 @@ func TestInsert(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to get rule: %v", err)
 			}
-			if diff := reflect.DeepEqual(*tc.want, got); !diff {
-				t.Errorf("want: %+v\ngot:%+v", *tc.want, got)
+			if diff := reflect.DeepEqual(tc.want, got); !diff {
+				t.Errorf("want: %+v\ngot:%+v", tc.want, got)
 			}
 			
 		})

@@ -2,7 +2,6 @@ package networkstore
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	
 	"github.com/Neffats/wherecp/core"

@@ -55,7 +55,7 @@ func (rs *RuleStore) All() []core.Rule {
 
 func (rs *RuleStore) Insert(rule *core.Rule) error {
 	// Check whether the rule is already in the store.
-	existing, err := rs.Get(rule.UID)
+	existing, err := rs.Get(rule.UID())
 	if !errors.Is(err, ErrRuleNotFound) {
 		return fmt.Errorf("failed to determine whether rule is already present: %v", err)
 	}
@@ -66,7 +66,7 @@ func (rs *RuleStore) Insert(rule *core.Rule) error {
 	}
 
 	i := sort.Search(len(rs.Rules), func(i int) bool {
-		return rule.Number > rs.Rules[i].Number
+		return rule.UID() > rs.Rules[i].UID()
 	})
 
 	newRules := make([]*core.Rule, len(rs.Rules)+1)
@@ -85,7 +85,7 @@ func (rs *RuleStore) Get(uid string) (core.Rule, error) {
 	rs.mux.RLock()
 	defer rs.mux.RUnlock()
 	for _, r := range rs.Rules {
-		if r.UID == uid {
+		if r.UID() == uid {
 			return *r, nil
 		}
 	}
@@ -96,7 +96,7 @@ func (rs *RuleStore) Update(uid string, updated *core.Rule) error {
 	rs.mux.RLock()
 	defer rs.mux.RUnlock()
 	for i, rule := range rs.Rules {
-		if rule.UID == uid {
+		if rule.UID() == uid {
 			rs.mux.Lock()
 			rs.Rules[i] = updated
 			rs.mux.Unlock()
@@ -110,7 +110,7 @@ func (rs *RuleStore) Delete(uid string) error {
 	//rs.mux.RLock()
 	//defer rs.mux.RUnlock()
 	for i, rule := range rs.Rules {
-		if rule.UID == uid {
+		if rule.UID() == uid {
 			rs.mux.Lock()
 			newRules := make([]*core.Rule, len(rs.Rules)-1)
 			copy(newRules[:i], rs.Rules[:i])

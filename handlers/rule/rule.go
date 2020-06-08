@@ -87,7 +87,7 @@ func ContainsNet(obj core.NetworkObject, comp func(*core.Rule) core.NetContainse
 
 func ContainsPort(obj core.PortObject) filterFn {
 	return func(r *core.Rule) (bool, error) {
-		contains := r.Port.Contains(obj)
+		contains := r.Port().Contains(obj)
 		return contains, nil
 	}
 }

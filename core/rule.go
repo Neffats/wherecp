@@ -29,6 +29,14 @@ func NewRule(number int, src, dst *Group, prt *PortGroup, action bool, comment s
 	}
 }
 
+func (r *Rule) UID() string {
+	return r.uid
+}
+
+func (r *Rule) Port() *PortGroup {
+	return r.port
+}
+
 type Haser interface {
 	HasObject(obj interface{}) (bool, error)
 }

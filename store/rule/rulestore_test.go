@@ -2,10 +2,10 @@ package rulestore
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/Neffats/wherecp/core"
-	"github.com/google/go-cmp/cmp"
 )
 
 type testPuller struct {}
@@ -63,13 +63,12 @@ func TestAll(t *testing.T) {
 
 	got := testStore.All()
 	if len(got) != len(rules) {
-		diff := cmp.Diff(got, rules)
-		t.Errorf("length of expected rules doesn't match rules we got, wanted length: %d, length gotten: %d\nAll() mismatch (-want +got):\n%s", len(rules), len(got), diff)
+		t.Errorf("length of expected rules doesn't match rules we got, wanted length: %d, length gotten: %d\n", len(rules), len(got))
 		return
 	}
 	for i := 0; i < len(rules); i++ {
-		if diff := cmp.Diff(got[i], *rules[i]); diff != "" {
-			t.Errorf("All() mismatch (-want +got):\n%s", diff)
+		if diff := reflect.DeepEqual(got[i], *rules[i]); !diff {
+			t.Errorf("expected: %+v\ngot:%+v", got[i], *rules[i])
 		}
 	}
 }
@@ -127,15 +126,15 @@ func TestGet(t *testing.T) {
 		err   bool
 	}{
 		{name: "Get rule 1",
-			input: rule1.UID,
+			input: rule1.UID(),
 			want: rule1,
 			err:   false},
 		{name: "Get rule 2",
-			input: rule2.UID,
+			input: rule2.UID(),
 			want: rule2,
 			err:   false},
 		{name: "Non-exitent rule",
-			input: rule3.UID,
+			input: rule3.UID(),
 			want: nil,
 			err:   true},
 		{name: "Bad UID format",
@@ -154,8 +153,8 @@ func TestGet(t *testing.T) {
 				}
 				t.Errorf("get error when not expected: %v", err)
 			}
-			if diff := cmp.Diff(*tc.want, got); diff != "" {
-				t.Errorf("All() mismatch (-want +got):\n%s", diff)
+			if diff := reflect.DeepEqual(*tc.want, got); !diff {
+				t.Errorf("want: %+v\ngot: %+v", *tc.want, got)
 			}
 			
 		})
@@ -236,12 +235,12 @@ func TestInsert(t *testing.T) {
 				}
 				t.Errorf("get error when not expected: %v", err)
 			}
-			got, err := testStore.Get(tc.input.UID)
+			got, err := testStore.Get(tc.input.UID())
 			if err != nil {
 				t.Errorf("failed to get rule: %v", err)
 			}
-			if diff := cmp.Diff(*tc.want, got); diff != "" {
-				t.Errorf("All() mismatch (-want +got):\n%s", diff)
+			if diff := reflect.DeepEqual(*tc.want, got); !diff {
+				t.Errorf("want: %+v\ngot:%+v", *tc.want, got)
 			}
 			
 		})
@@ -301,7 +300,7 @@ func TestDelete(t *testing.T) {
 		err   bool
 	}{
 		{name: "Delete rule 1",
-			input: rule1.UID,
+			input: rule1.UID(),
 			want: ErrRuleNotFound,
 			err:   false},
 	}

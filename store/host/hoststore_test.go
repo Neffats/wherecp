@@ -2,10 +2,10 @@ package hoststore
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/Neffats/wherecp/core"
-	"github.com/google/go-cmp/cmp"
 )
 
 type testPuller struct {}
@@ -40,8 +40,8 @@ func TestAll(t *testing.T) {
 	}
 
 	got := testStore.All()
-	if diff := cmp.Diff(got, hosts); diff != "" {
-		t.Errorf("All() mismatch (-want +got):\n%s", diff)
+	if diff := reflect.DeepEqual(got, hosts); !diff {
+		t.Errorf("want: %+v\ngot: %+v", hosts, got)
 	}
 }
 
@@ -80,15 +80,15 @@ func TestGet(t *testing.T) {
 		err   bool
 	}{
 		{name: "Get host 1",
-			input: host1.UID,
+			input: host1.UID(),
 			want: host1,
 			err:   false},
 		{name: "Get host 2",
-			input: host2.UID,
+			input: host2.UID(),
 			want: host2,
 			err:   false},
 		{name: "Non-exitent host",
-			input: host4.UID,
+			input: host4.UID(),
 			want: nil,
 			err:   true},
 		{name: "Bad UID format",
@@ -107,8 +107,8 @@ func TestGet(t *testing.T) {
 				}
 				t.Errorf("get error when not expected: %v", err)
 			}
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("All() mismatch (-want +got):\n%s", diff)
+			if diff := reflect.DeepEqual(tc.want, got); !diff {
+				t.Errorf("want: %+v\ngot: %+v", tc.want, got)
 			}
 			
 		})
@@ -167,12 +167,12 @@ func TestCreate(t *testing.T) {
 				}
 				t.Errorf("get error when not expected: %v", err)
 			}
-			got, err := testStore.Get(tc.input.UID)
+			got, err := testStore.Get(tc.input.UID())
 			if err != nil {
 				t.Errorf("failed to get rule: %v", err)
 			}
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("All() mismatch (-want +got):\n%s", diff)
+			if diff := reflect.DeepEqual(tc.want, got); !diff {
+				t.Errorf("want: %+v\ngot: %+v", tc.want, got)
 			}
 			
 		})
@@ -215,7 +215,7 @@ func TestDelete(t *testing.T) {
 		err   bool
 	}{
 		{name: "Delete rule 1",
-			input: host1.UID,
+			input: host1.UID(),
 			want: ErrHostNotFound,
 			err:   false},
 	}

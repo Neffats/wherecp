@@ -32,6 +32,10 @@ func NewHost(name, addr, comment string) (*Host, error) {
 	}, nil
 }
 
+func (h *Host) UID() string {
+	return h.uid
+}
+
 func (h *Host) Unpack() []NetworkObject {
 	result := make([]NetworkObject, 0)
 	result = append(result,

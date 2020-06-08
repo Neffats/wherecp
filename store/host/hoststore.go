@@ -48,7 +48,7 @@ func (hs *HostStore) All() []*core.Host {
 }
 
 func (hs *HostStore) Create(host *core.Host) error {
-	existing, err := hs.Get(host.UID)
+	existing, err := hs.Get(host.UID())
 	if !errors.Is(err, ErrHostNotFound) {
 		return fmt.Errorf("failed to determine whether host is already present: %v", err)
 	}
@@ -66,7 +66,7 @@ func (hs *HostStore) Get(uid string) (*core.Host, error) {
 	defer hs.mux.RUnlock()
 
 	for _, h := range hs.Hosts {
-		if uid == h.UID {
+		if uid == h.UID() {
 			return h, nil
 		}
 	}
@@ -78,7 +78,7 @@ func (hs *HostStore) Update(uid string, updated *core.Host) error {
 	hs.mux.RLock()
 	defer hs.mux.RUnlock()
 	for i, h := range hs.Hosts {
-		if h.UID == uid {
+		if h.UID() == uid {
 			hs.mux.Lock()
 			hs.Hosts[i] = updated
 			hs.mux.Unlock()
@@ -90,7 +90,7 @@ func (hs *HostStore) Update(uid string, updated *core.Host) error {
 
 func (hs *HostStore) Delete(uid string) error {
 	for i, h := range hs.Hosts {
-		if h.UID == uid {
+		if h.UID() == uid {
 			hs.mux.Lock()
 			newHosts := make([]*core.Host, len(hs.Hosts)-1)
 			copy(newHosts[:i], hs.Hosts[:i])
